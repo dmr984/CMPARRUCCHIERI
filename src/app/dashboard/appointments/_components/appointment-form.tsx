@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -81,6 +81,7 @@ export function AppointmentForm({
   services,
   staff,
 }: AppointmentFormProps) {
+  const [isServicesPopoverOpen, setServicesPopoverOpen] = useState(false);
   const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -183,7 +184,7 @@ export function AppointmentForm({
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <FormLabel>Servizi</FormLabel>
-                        <Popover>
+                        <Popover open={isServicesPopoverOpen} onOpenChange={setServicesPopoverOpen}>
                           <PopoverTrigger asChild>
                             <FormControl>
                               <Button
@@ -217,12 +218,13 @@ export function AppointmentForm({
                                     <CommandItem
                                       value={service.id}
                                       key={service.id}
-                                      onSelect={(currentValue) => {
+                                      onSelect={() => {
                                         const currentIds = field.value || [];
-                                        const newIds = currentIds.includes(currentValue)
-                                          ? currentIds.filter((id) => id !== currentValue)
-                                          : [...currentIds, currentValue];
+                                        const newIds = currentIds.includes(service.id)
+                                          ? currentIds.filter((id) => id !== service.id)
+                                          : [...currentIds, service.id];
                                         field.onChange(newIds);
+                                        // setServicesPopoverOpen(false); // Optionally close on select
                                       }}
                                     >
                                       <Check

@@ -9,11 +9,6 @@ import { PlusCircle } from 'lucide-react';
 import type { Appointment, Customer, Service, Staff } from '@/lib/types';
 import { AppointmentForm } from './_components/appointment-form';
 
-// Since we are not using a real database, we'll mimic data fetching on component mount
-// and then handle state updates on the client.
-// In a real app, you would use server actions or API routes to mutate data
-// and then re-fetch or use a state management library to update the UI.
-
 export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -47,7 +42,8 @@ export default function AppointmentsPage() {
     if (appointmentData.id) {
       setAppointments(appointments.map(a => a.id === appointmentData.id ? { ...a, ...appointmentData } as Appointment : a));
     } else {
-      setAppointments([...appointments, { ...appointmentData, id: (appointments.length + 1).toString() } as Appointment]);
+       const newId = (Math.max(0, ...appointments.map(a => parseInt(a.id))) + 1).toString();
+      setAppointments([...appointments, { ...appointmentData, id: newId } as Appointment]);
     }
     setIsFormOpen(false);
   }
@@ -84,3 +80,5 @@ export default function AppointmentsPage() {
     </div>
   );
 }
+
+    
