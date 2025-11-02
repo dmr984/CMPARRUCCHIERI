@@ -69,9 +69,8 @@ export default function DashboardLayout({
           <SidebarMenu>
             {navItems.map((item) => (
               <SidebarMenuItem key={item.label}>
-                <Link href={item.href} passHref>
+                <Link href={item.href} passHref asChild>
                   <SidebarMenuButton
-                    as="a"
                     isActive={pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard')}
                     tooltip={item.label}
                   >
