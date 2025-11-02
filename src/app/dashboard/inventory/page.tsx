@@ -23,9 +23,12 @@ import { getProducts } from '@/lib/data';
 import { MoreVertical, PlusCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import type { Product } from '@/lib/types';
+import { ProductForm } from './_components/product-form';
 
 export default function InventoryPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
 
   useEffect(() => {
     async function fetchData() {
@@ -34,10 +37,42 @@ export default function InventoryPage() {
     fetchData();
   }, []);
 
+  const handleNewProduct = () => {
+    setEditingProduct(undefined);
+    setIsFormOpen(true);
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setIsFormOpen(true);
+  };
+
+  const handleFormSave = (productData: Omit<Product, 'id'> & { id?: string }) => {
+    if (productData.id) {
+      setProducts(
+        products.map((p) =>
+          p.id === productData.id ? { ...p, ...productData } as Product : p
+        )
+      );
+    } else {
+      const newId = (Math.max(0, ...products.map((p) => parseInt(p.id))) + 1).toString();
+      const newProduct: Product = {
+        ...productData,
+        id: newId,
+      };
+      setProducts([...products, newProduct]);
+    }
+    setIsFormOpen(false);
+  };
+
+  const handleFormCancel = () => {
+    setIsFormOpen(false);
+  };
+
   return (
     <div>
       <PageHeader title="Inventario" description="Traccia e gestisci lo stock dei prodotti.">
-        <Button>
+        <Button onClick={handleNewProduct}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Aggiungi Prodotto
         </Button>
@@ -88,7 +123,9 @@ export default function InventoryPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem>Aggiorna Stock</DropdownMenuItem>
-                          <DropdownMenuItem>Modifica Prodotto</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditProduct(product)}>
+                            Modifica Prodotto
+                          </DropdownMenuItem>
                           <DropdownMenuItem className="text-destructive">
                             Elimina
                           </DropdownMenuItem>
@@ -102,6 +139,12 @@ export default function InventoryPage() {
           </Table>
         </CardContent>
       </Card>
+      <ProductForm 
+        isOpen={isFormOpen}
+        onClose={handleFormCancel}
+        onSave={handleFormSave}
+        product={editingProduct}
+      />
     </div>
   );
 }
