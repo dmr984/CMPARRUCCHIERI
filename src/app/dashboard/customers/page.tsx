@@ -49,17 +49,21 @@ export default function CustomersPage() {
     setIsFormOpen(true);
   };
 
+  const handleDeleteCustomer = (customerId: string) => {
+    setCustomers(customers.filter(c => c.id !== customerId));
+    setIsFormOpen(false);
+    setEditingCustomer(undefined);
+  }
+
   const handleFormSave = (customerData: Omit<Customer, 'id' | 'lastVisit' | 'avatarUrl'> & { id?: string }) => {
     if (customerData.id) {
-      // Logic for editing an existing customer
       setCustomers(customers.map(c => 
         c.id === customerData.id 
-          ? { ...c, ...customerData, lastVisit: c.lastVisit, avatarUrl: c.avatarUrl } as Customer
+          ? { ...c, ...customerData } as Customer
           : c
       ));
     } else {
-      // Logic for adding a new customer
-      const newId = (Math.max(0, ...customers.map(c => parseInt(c.id))) + 1).toString();
+      const newId = (Math.max(0, ...customers.map(c => parseInt(c.id, 10))) + 1).toString();
       const newCustomer: Customer = {
         id: newId,
         name: customerData.name,
@@ -72,10 +76,12 @@ export default function CustomersPage() {
       setCustomers([...customers, newCustomer]);
     }
     setIsFormOpen(false);
+    setEditingCustomer(undefined);
   };
 
   const handleFormCancel = () => {
     setIsFormOpen(false);
+    setEditingCustomer(undefined);
   };
 
   return (
@@ -145,7 +151,9 @@ export default function CustomersPage() {
                         >
                           Modifica
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem 
+                            onClick={() => handleDeleteCustomer(customer.id)}
+                            className="text-destructive">
                           Elimina
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -161,6 +169,7 @@ export default function CustomersPage() {
         isOpen={isFormOpen}
         onClose={handleFormCancel}
         onSave={handleFormSave}
+        onDelete={handleDeleteCustomer}
         customer={editingCustomer}
       />
     </div>

@@ -41,6 +41,7 @@ interface ProductFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (product: Omit<Product, 'id'> & { id?: string }) => void;
+  onDelete: (productId: string) => void;
   product?: Product;
 }
 
@@ -48,6 +49,7 @@ export function ProductForm({
   isOpen,
   onClose,
   onSave,
+  onDelete,
   product,
 }: ProductFormProps) {
   const form = useForm<ProductFormValues>({
@@ -91,6 +93,12 @@ export function ProductForm({
       id: product?.id,
       ...data,
     });
+  };
+
+  const handleDelete = () => {
+    if (product) {
+        onDelete(product.id);
+    }
   };
 
   const { isSubmitting } = form.formState;
@@ -191,14 +199,23 @@ export function ProductForm({
                 )}
                 />
             
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
-                Annulla
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Salva Prodotto
-              </Button>
+            <DialogFooter className="justify-between">
+                <div>
+                {product && (
+                    <Button type="button" variant="destructive" onClick={handleDelete}>
+                        Elimina
+                    </Button>
+                )}
+                </div>
+                <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={onClose}>
+                    Annulla
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Salva Prodotto
+                </Button>
+                </div>
             </DialogFooter>
           </form>
         </Form>

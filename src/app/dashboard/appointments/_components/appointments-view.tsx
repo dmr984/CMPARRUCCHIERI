@@ -42,6 +42,7 @@ interface AppointmentsViewProps {
   services: Service[];
   staff: Staff[];
   onEditAppointment: (appointment: Appointment) => void;
+  onDeleteAppointment: (appointmentId: string) => void;
 }
 
 export function AppointmentsView({
@@ -50,6 +51,7 @@ export function AppointmentsView({
   services,
   staff,
   onEditAppointment,
+  onDeleteAppointment,
 }: AppointmentsViewProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
 
@@ -179,7 +181,9 @@ export function AppointmentsView({
                               <DropdownMenuItem onClick={() => onEditAppointment(app)}>
                                 Modifica/Vedi Dettagli
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-destructive">
+                              <DropdownMenuItem 
+                                onClick={() => onDeleteAppointment(app.id)}
+                                className="text-destructive">
                                 Annulla
                               </DropdownMenuItem>
                             </DropdownMenuContent>

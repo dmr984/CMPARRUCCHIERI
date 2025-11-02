@@ -48,19 +48,27 @@ export default function ServicesPage() {
     setIsFormOpen(true);
   }
 
+  const handleDeleteService = (serviceId: string) => {
+    setServices(services.filter(s => s.id !== serviceId));
+    setIsFormOpen(false);
+    setEditingService(undefined);
+  }
+
   const handleFormSave = (serviceData: Omit<Service, 'id'> & { id?: string }) => {
     if (serviceData.id) {
         setServices(services.map(s => s.id === serviceData.id ? { ...s, ...serviceData } as Service : s));
     } else {
-        const newId = (Math.max(0, ...services.map(s => parseInt(s.id))) + 1).toString();
+        const newId = (Math.max(0, ...services.map(s => parseInt(s.id, 10))) + 1).toString();
         const newService = { ...serviceData, id: newId } as Service;
         setServices([...services, newService]);
     }
     setIsFormOpen(false);
+    setEditingService(undefined);
   }
   
   const handleFormCancel = () => {
     setIsFormOpen(false);
+    setEditingService(undefined);
   }
 
 
@@ -104,7 +112,9 @@ export default function ServicesPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleEditService(service)}>Modifica</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem 
+                            onClick={() => handleDeleteService(service.id)}
+                            className="text-destructive">
                           Elimina
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -120,6 +130,7 @@ export default function ServicesPage() {
         isOpen={isFormOpen}
         onClose={handleFormCancel}
         onSave={handleFormSave}
+        onDelete={handleDeleteService}
         service={editingService}
       />
     </div>

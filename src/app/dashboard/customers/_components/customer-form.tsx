@@ -40,6 +40,7 @@ interface CustomerFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (customer: Omit<Customer, 'id' | 'lastVisit' | 'avatarUrl'> & { id?: string }) => void;
+  onDelete: (customerId: string) => void;
   customer?: Customer;
 }
 
@@ -47,6 +48,7 @@ export function CustomerForm({
   isOpen,
   onClose,
   onSave,
+  onDelete,
   customer,
 }: CustomerFormProps) {
   const form = useForm<CustomerFormValues>({
@@ -84,6 +86,12 @@ export function CustomerForm({
       id: customer?.id,
       ...data,
     });
+  };
+
+  const handleDelete = () => {
+    if (customer) {
+        onDelete(customer.id);
+    }
   };
 
   const { isSubmitting } = form.formState;
@@ -157,14 +165,23 @@ export function CustomerForm({
               )}
             />
             
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
-                Annulla
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Salva Cliente
-              </Button>
+            <DialogFooter className="justify-between">
+              <div>
+                {customer && (
+                  <Button type="button" variant="destructive" onClick={handleDelete}>
+                    Elimina
+                  </Button>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Annulla
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Salva Cliente
+                </Button>
+              </div>
             </DialogFooter>
           </form>
         </Form>

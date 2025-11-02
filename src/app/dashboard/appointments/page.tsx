@@ -27,6 +27,10 @@ export default function AppointmentsPage() {
     }
     fetchData();
   }, []);
+  
+  const refetchData = async () => {
+    setAppointments(await getAppointments());
+  }
 
   const handleNewAppointment = () => {
     setEditingAppointment(undefined);
@@ -42,14 +46,22 @@ export default function AppointmentsPage() {
     if (appointmentData.id) {
       setAppointments(appointments.map(a => a.id === appointmentData.id ? { ...a, ...appointmentData } as Appointment : a));
     } else {
-       const newId = (Math.max(0, ...appointments.map(a => parseInt(a.id))) + 1).toString();
-      setAppointments([...appointments, { ...appointmentData, id: newId } as Appointment]);
+      const newId = (Math.max(0, ...appointments.map(a => parseInt(a.id, 10))) + 1).toString();
+      const newAppointment = { ...appointmentData, id: newId } as Appointment;
+      setAppointments([...appointments, newAppointment]);
     }
     setIsFormOpen(false);
   }
 
   const handleFormCancel = () => {
     setIsFormOpen(false);
+    setEditingAppointment(undefined);
+  }
+
+  const handleDeleteAppointment = (appointmentId: string) => {
+    setAppointments(appointments.filter(a => a.id !== appointmentId));
+    setIsFormOpen(false);
+    setEditingAppointment(undefined);
   }
 
 
@@ -67,11 +79,13 @@ export default function AppointmentsPage() {
         services={services}
         staff={staff}
         onEditAppointment={handleEditAppointment}
+        onDeleteAppointment={handleDeleteAppointment}
       />
       <AppointmentForm
         isOpen={isFormOpen}
         onClose={handleFormCancel}
         onSave={handleFormSave}
+        onDelete={handleDeleteAppointment}
         appointment={editingAppointment}
         customers={customers}
         services={services}
@@ -80,5 +94,3 @@ export default function AppointmentsPage() {
     </div>
   );
 }
-
-    

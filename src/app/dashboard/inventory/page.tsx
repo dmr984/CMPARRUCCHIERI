@@ -47,6 +47,12 @@ export default function InventoryPage() {
     setIsFormOpen(true);
   };
 
+  const handleDeleteProduct = (productId: string) => {
+    setProducts(products.filter(p => p.id !== productId));
+    setIsFormOpen(false);
+    setEditingProduct(undefined);
+  };
+
   const handleFormSave = (productData: Omit<Product, 'id'> & { id?: string }) => {
     if (productData.id) {
       setProducts(
@@ -55,7 +61,7 @@ export default function InventoryPage() {
         )
       );
     } else {
-      const newId = (Math.max(0, ...products.map((p) => parseInt(p.id))) + 1).toString();
+      const newId = (Math.max(0, ...products.map(p => parseInt(p.id, 10))) + 1).toString();
       const newProduct: Product = {
         ...productData,
         id: newId,
@@ -63,10 +69,12 @@ export default function InventoryPage() {
       setProducts([...products, newProduct]);
     }
     setIsFormOpen(false);
+    setEditingProduct(undefined);
   };
 
   const handleFormCancel = () => {
     setIsFormOpen(false);
+    setEditingProduct(undefined);
   };
 
   return (
@@ -122,11 +130,12 @@ export default function InventoryPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Aggiorna Stock</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditProduct(product)}>
                             Modifica Prodotto
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteProduct(product.id)}
+                            className="text-destructive">
                             Elimina
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -143,6 +152,7 @@ export default function InventoryPage() {
         isOpen={isFormOpen}
         onClose={handleFormCancel}
         onSave={handleFormSave}
+        onDelete={handleDeleteProduct}
         product={editingProduct}
       />
     </div>

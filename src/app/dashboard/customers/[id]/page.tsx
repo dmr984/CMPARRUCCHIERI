@@ -10,6 +10,7 @@ import { Mail, Phone, Edit, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
+import type { Service } from '@/lib/types';
 
 export default async function CustomerDetailPage({ params }: { params: { id: string } }) {
   const customer = await getCustomerById(params.id);
@@ -26,7 +27,7 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
     .filter(app => app.customerId === customer.id)
     .map(app => ({
       ...app,
-      services: app.serviceIds.map(id => allServices.find(s => s.id === id)).filter(Boolean),
+      services: app.serviceIds.map(id => allServices.find(s => s.id === id)).filter((s): s is Service => !!s),
       staff: allStaff.find(st => st.id === app.staffId)
     }))
     .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
@@ -41,6 +42,8 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
                     Torna ai Clienti
                 </Link>
             </Button>
+            {/* The edit button here would ideally open a form. 
+                For now it's just for show, as editing is handled on the main customers page. */}
             <Button>
                 <Edit className="mr-2 h-4 w-4" />
                 Modifica Cliente
@@ -110,12 +113,12 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
                                     <TableCell>
                                         <div className="flex flex-col gap-1">
                                             {app.services.map(service => (
-                                                <Badge key={service!.id} variant="secondary" className="whitespace-nowrap">{service!.name}</Badge>
+                                                <Badge key={service.id} variant="secondary" className="whitespace-nowrap">{service.name}</Badge>
                                             ))}
                                         </div>
                                     </TableCell>
                                     <TableCell>{app.staff?.name}</TableCell>
-                                    <TableCell>€{app.services.reduce((total, s) => total + s!.price, 0).toFixed(2)}</TableCell>
+                                    <TableCell>€{app.services.reduce((total, s) => total + s.price, 0).toFixed(2)}</TableCell>
                                     <TableCell>
                                         <Badge variant={app.status === 'Completato' ? 'secondary' : 'default'}>{app.status}</Badge>
                                     </TableCell>

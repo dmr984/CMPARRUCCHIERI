@@ -66,6 +66,7 @@ interface AppointmentFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (appointment: Omit<Appointment, 'id'> & { id?: string }) => void;
+  onDelete: (appointmentId: string) => void;
   appointment?: Appointment;
   customers: Customer[];
   services: Service[];
@@ -76,11 +77,14 @@ export function AppointmentForm({
   isOpen,
   onClose,
   onSave,
+  onDelete,
   appointment,
   customers,
   services,
   staff,
 }: AppointmentFormProps) {
+  const [isServicesPopoverOpen, setIsServicesPopoverOpen] = useState(false);
+
   const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -135,6 +139,12 @@ export function AppointmentForm({
     });
   };
 
+  const handleDelete = () => {
+    if (appointment) {
+        onDelete(appointment.id);
+    }
+  };
+
   const { isSubmitting } = form.formState;
   const title = appointment ? 'Modifica Appuntamento' : 'Nuovo Appuntamento';
   const description = appointment
@@ -183,7 +193,7 @@ export function AppointmentForm({
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <FormLabel>Servizi</FormLabel>
-                        <Popover>
+                        <Popover open={isServicesPopoverOpen} onOpenChange={setIsServicesPopoverOpen}>
                           <PopoverTrigger asChild>
                             <FormControl>
                               <Button
@@ -218,11 +228,11 @@ export function AppointmentForm({
                                       value={service.name}
                                       key={service.id}
                                       onSelect={() => {
-                                        const currentIds = field.value || [];
-                                        const newIds = currentIds.includes(service.id)
-                                          ? currentIds.filter((id) => id !== service.id)
-                                          : [...currentIds, service.id];
-                                        field.onChange(newIds);
+                                        field.onChange(
+                                            field.value?.includes(service.id)
+                                            ? field.value?.filter((id) => id !== service.id)
+                                            : [...(field.value || []), service.id]
+                                        )
                                       }}
                                     >
                                       <Check
@@ -364,14 +374,23 @@ export function AppointmentForm({
               </div>
             </ScrollArea>
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
-                Annulla
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Salva Appuntamento
-              </Button>
+            <DialogFooter className="justify-between">
+                <div>
+                {appointment && (
+                    <Button type="button" variant="destructive" onClick={handleDelete}>
+                        Elimina
+                    </Button>
+                )}
+                </div>
+                <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={onClose}>
+                    Annulla
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Salva Appuntamento
+                </Button>
+                </div>
             </DialogFooter>
           </form>
         </Form>
