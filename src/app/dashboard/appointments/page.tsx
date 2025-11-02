@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { getAppointments, getCustomers, getServices, getStaff } from '@/lib/data';
 import { AppointmentsView } from './_components/appointments-view';
@@ -23,7 +23,7 @@ export default function AppointmentsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | undefined>(undefined);
 
-  useState(() => {
+  useEffect(() => {
     async function fetchData() {
       setAppointments(await getAppointments());
       setCustomers(await getCustomers());
@@ -31,7 +31,7 @@ export default function AppointmentsPage() {
       setStaff(await getStaff());
     }
     fetchData();
-  });
+  }, []);
 
   const handleNewAppointment = () => {
     setEditingAppointment(undefined);
