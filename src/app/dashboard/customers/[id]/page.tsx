@@ -26,7 +26,7 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
     .filter(app => app.customerId === customer.id)
     .map(app => ({
       ...app,
-      service: allServices.find(s => s.id === app.serviceId),
+      services: app.serviceIds.map(id => allServices.find(s => s.id === id)).filter(Boolean),
       staff: allStaff.find(st => st.id === app.staffId)
     }))
     .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
@@ -97,7 +97,7 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Data</TableHead>
-                                <TableHead>Servizio</TableHead>
+                                <TableHead>Servizi</TableHead>
                                 <TableHead>Stilista</TableHead>
                                 <TableHead>Prezzo</TableHead>
                                 <TableHead>Stato</TableHead>
@@ -107,9 +107,15 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
                             {customerAppointments.map(app => (
                                 <TableRow key={app.id}>
                                     <TableCell>{format(app.dateTime, 'PPP', { locale: it })}</TableCell>
-                                    <TableCell>{app.service?.name}</TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col gap-1">
+                                            {app.services.map(service => (
+                                                <Badge key={service!.id} variant="secondary" className="whitespace-nowrap">{service!.name}</Badge>
+                                            ))}
+                                        </div>
+                                    </TableCell>
                                     <TableCell>{app.staff?.name}</TableCell>
-                                    <TableCell>€{app.service?.price.toFixed(2)}</TableCell>
+                                    <TableCell>€{app.services.reduce((total, s) => total + s!.price, 0).toFixed(2)}</TableCell>
                                     <TableCell>
                                         <Badge variant={app.status === 'Completato' ? 'secondary' : 'default'}>{app.status}</Badge>
                                     </TableCell>

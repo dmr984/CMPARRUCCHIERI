@@ -28,7 +28,7 @@ export type Appointment = {
   id: string;
   customerId: string;
   staffId: string;
-  serviceId: string;
+  serviceIds: string[];
   dateTime: Date;
   status: AppointmentStatus;
   notes?: string;

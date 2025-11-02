@@ -43,11 +43,11 @@ export default function AppointmentsPage() {
     setIsFormOpen(true);
   }
 
-  const handleFormSave = (appointment: Appointment) => {
-    if (editingAppointment) {
-      setAppointments(appointments.map(a => a.id === appointment.id ? appointment : a));
+  const handleFormSave = (appointmentData: Omit<Appointment, 'id'> & { id?: string }) => {
+    if (appointmentData.id) {
+      setAppointments(appointments.map(a => a.id === appointmentData.id ? { ...a, ...appointmentData } as Appointment : a));
     } else {
-      setAppointments([...appointments, { ...appointment, id: (appointments.length + 1).toString() }]);
+      setAppointments([...appointments, { ...appointmentData, id: (appointments.length + 1).toString() } as Appointment]);
     }
     setIsFormOpen(false);
   }

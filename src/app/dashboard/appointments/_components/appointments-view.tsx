@@ -57,6 +57,12 @@ export function AppointmentsView({
     ? appointments.filter((app) => isSameDay(app.dateTime, date))
     : [];
 
+  const getServicesForAppointment = (serviceIds: string[]) => {
+    return serviceIds
+      .map(id => services.find(s => s.id === id))
+      .filter((s): s is Service => !!s);
+  };
+
   return (
     <div className="grid gap-8 md:grid-cols-3">
       <Card className="md:col-span-1">
@@ -120,9 +126,7 @@ export function AppointmentsView({
                     const customer = customers.find(
                       (c) => c.id === app.customerId
                     );
-                    const service = services.find(
-                      (s) => s.id === app.serviceId
-                    );
+                    const appointmentServices = getServicesForAppointment(app.serviceIds);
                     const stylist = staff.find((st) => st.id === app.staffId);
                     return (
                       <TableRow key={app.id}>
@@ -140,7 +144,15 @@ export function AppointmentsView({
                             <span className="font-medium">{customer?.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell>{service?.name}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            {appointmentServices.map(service => (
+                              <Badge key={service.id} variant="secondary" className="whitespace-nowrap">
+                                {service.name}
+                              </Badge>
+                            ))}
+                          </div>
+                        </TableCell>
                         <TableCell>{stylist?.name}</TableCell>
                         <TableCell>{format(app.dateTime, 'HH:mm')}</TableCell>
                         <TableCell>

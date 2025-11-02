@@ -4,9 +4,9 @@ import { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { format, parse } from 'date-fns';
+import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2, Check, ChevronsUpDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -40,10 +40,19 @@ import { cn } from '@/lib/utils';
 import type { Appointment, Customer, Service, Staff, AppointmentStatus } from '@/lib/types';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { Badge } from '@/components/ui/badge';
 
 const formSchema = z.object({
   customerId: z.string().min(1, 'È richiesto un cliente.'),
-  serviceId: z.string().min(1, 'È richiesto un servizio.'),
+  serviceIds: z.array(z.string()).min(1, 'È richiesto almeno un servizio.'),
   staffId: z.string().min(1, 'È richiesto uno stilista.'),
   date: z.date({ required_error: 'È richiesta una data.' }),
   time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Formato ora non valido (HH:MM).'),
@@ -56,7 +65,7 @@ type AppointmentFormValues = z.infer<typeof formSchema>;
 interface AppointmentFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (appointment: Appointment) => void;
+  onSave: (appointment: Omit<Appointment, 'id'> & { id?: string }) => void;
   appointment?: Appointment;
   customers: Customer[];
   services: Service[];
@@ -74,29 +83,39 @@ export function AppointmentForm({
 }: AppointmentFormProps) {
   const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      customerId: '',
+      serviceIds: [],
+      staffId: '',
+      time: '',
+      status: 'Programmato',
+      notes: '',
+    },
   });
 
   useEffect(() => {
-    if (appointment) {
-      form.reset({
-        customerId: appointment.customerId,
-        serviceId: appointment.serviceId,
-        staffId: appointment.staffId,
-        date: appointment.dateTime,
-        time: format(appointment.dateTime, 'HH:mm'),
-        status: appointment.status,
-        notes: appointment.notes || '',
-      });
-    } else {
-      form.reset({
-        customerId: '',
-        serviceId: '',
-        staffId: '',
-        date: new Date(),
-        time: '',
-        status: 'Programmato',
-        notes: '',
-      });
+    if (isOpen) {
+      if (appointment) {
+        form.reset({
+          customerId: appointment.customerId,
+          serviceIds: appointment.serviceIds,
+          staffId: appointment.staffId,
+          date: appointment.dateTime,
+          time: format(appointment.dateTime, 'HH:mm'),
+          status: appointment.status,
+          notes: appointment.notes || '',
+        });
+      } else {
+        form.reset({
+          customerId: '',
+          serviceIds: [],
+          staffId: '',
+          date: new Date(),
+          time: '',
+          status: 'Programmato',
+          notes: '',
+        });
+      }
     }
   }, [appointment, form, isOpen]);
 
@@ -106,9 +125,9 @@ export function AppointmentForm({
     dateTime.setHours(hours, minutes);
 
     onSave({
-      id: appointment?.id || '', // The parent will generate an ID for new appointments
+      id: appointment?.id,
       customerId: data.customerId,
-      serviceId: data.serviceId,
+      serviceIds: data.serviceIds,
       staffId: data.staffId,
       dateTime,
       status: data.status,
@@ -140,7 +159,7 @@ export function AppointmentForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Cliente</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Seleziona un cliente" />
@@ -160,24 +179,66 @@ export function AppointmentForm({
                   />
                   <FormField
                     control={form.control}
-                    name="serviceId"
+                    name="serviceIds"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Servizio</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Seleziona un servizio" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {services.map((s) => (
-                              <SelectItem key={s.id} value={s.id}>
-                                {s.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Servizi</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  'w-full justify-between',
+                                  !field.value?.length && 'text-muted-foreground'
+                                )}
+                              >
+                                <div className="flex gap-1 flex-wrap">
+                                  {field.value?.length > 0 ? (
+                                    services
+                                      .filter((s) => field.value.includes(s.id))
+                                      .map((s) => <Badge variant="secondary" key={s.id}>{s.name}</Badge>)
+                                  ) : (
+                                    <span>Seleziona servizi</span>
+                                  )}
+                                </div>
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                              <CommandInput placeholder="Cerca servizio..." />
+                              <CommandList>
+                                <CommandEmpty>Nessun servizio trovato.</CommandEmpty>
+                                <CommandGroup>
+                                  {services.map((service) => (
+                                    <CommandItem
+                                      value={service.name}
+                                      key={service.id}
+                                      onSelect={() => {
+                                        const currentIds = field.value || [];
+                                        const newIds = currentIds.includes(service.id)
+                                          ? currentIds.filter((id) => id !== service.id)
+                                          : [...currentIds, service.id];
+                                        field.onChange(newIds);
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          'mr-2 h-4 w-4',
+                                          (field.value || []).includes(service.id) ? 'opacity-100' : 'opacity-0'
+                                        )}
+                                      />
+                                      {service.name}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -188,7 +249,7 @@ export function AppointmentForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Stilista</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Seleziona uno stilista" />
@@ -212,7 +273,7 @@ export function AppointmentForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Stato</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Seleziona stato" />

@@ -30,12 +30,12 @@ export const services: Service[] = [
 ];
 
 export const appointments: Appointment[] = [
-  { id: '1', customerId: '3', staffId: '2', serviceId: '1', dateTime: set(now, { hours: 10, minutes: 0, seconds: 0, milliseconds: 0 }), status: 'Programmato' },
-  { id: '2', customerId: '1', staffId: '3', serviceId: '2', dateTime: set(now, { hours: 14, minutes: 30, seconds: 0, milliseconds: 0 }), status: 'Programmato' },
-  { id: '3', customerId: '5', staffId: '2', serviceId: '4', dateTime: addHours(now, 2), status: 'Programmato' },
-  { id: '4', customerId: '2', staffId: '3', serviceId: '1', dateTime: subDays(now, 2), status: 'Completato' },
-  { id: '5', customerId: '4', staffId: '2', serviceId: '6', dateTime: subDays(now, 5), status: 'Completato' },
-  { id: '6', customerId: '1', staffId: '3', serviceId: '3', dateTime: subDays(now, 10), status: 'Completato' },
+  { id: '1', customerId: '3', staffId: '2', serviceIds: ['1'], dateTime: set(now, { hours: 10, minutes: 0, seconds: 0, milliseconds: 0 }), status: 'Programmato' },
+  { id: '2', customerId: '1', staffId: '3', serviceIds: ['2'], dateTime: set(now, { hours: 14, minutes: 30, seconds: 0, milliseconds: 0 }), status: 'Programmato' },
+  { id: '3', customerId: '5', staffId: '2', serviceIds: ['4'], dateTime: addHours(now, 2), status: 'Programmato' },
+  { id: '4', customerId: '2', staffId: '3', serviceIds: ['1'], dateTime: subDays(now, 2), status: 'Completato' },
+  { id: '5', customerId: '4', staffId: '2', serviceIds: ['6'], dateTime: subDays(now, 5), status: 'Completato' },
+  { id: '6', customerId: '1', staffId: '3', serviceIds: ['3'], dateTime: subDays(now, 10), status: 'Completato' },
 ];
 
 export const products: Product[] = [
@@ -59,7 +59,7 @@ export const getAppointmentDetails = async (id: string) => {
     if (!appointment) return null;
 
     const customer = await getCustomerById(appointment.customerId);
-    const service = services.find(s => s.id === appointment.serviceId);
+    const service = services.find(s => appointment.serviceIds.includes(s.id));
     const stylist = staff.find(s => s.id === appointment.staffId);
 
     return {
