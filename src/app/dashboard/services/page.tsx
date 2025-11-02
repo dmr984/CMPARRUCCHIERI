@@ -52,7 +52,7 @@ export default function ServicesPage() {
     if (serviceData.id) {
         setServices(services.map(s => s.id === serviceData.id ? { ...s, ...serviceData } as Service : s));
     } else {
-        const newId = (Math.max(...services.map(s => parseInt(s.id))) + 1).toString();
+        const newId = (Math.max(0, ...services.map(s => parseInt(s.id))) + 1).toString();
         setServices([...services, { ...serviceData, id: newId } as Service]);
     }
     setIsFormOpen(false);

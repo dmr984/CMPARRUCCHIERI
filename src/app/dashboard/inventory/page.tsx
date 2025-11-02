@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,9 +22,17 @@ import { Badge } from '@/components/ui/badge';
 import { getProducts } from '@/lib/data';
 import { MoreVertical, PlusCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import type { Product } from '@/lib/types';
 
-export default async function InventoryPage() {
-  const products = await getProducts();
+export default function InventoryPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      setProducts(await getProducts());
+    }
+    fetchData();
+  }, []);
 
   return (
     <div>
