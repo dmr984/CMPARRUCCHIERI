@@ -215,20 +215,20 @@ export function AppointmentForm({
                                 <CommandGroup>
                                   {services.map((service) => (
                                     <CommandItem
-                                      value={service.name}
+                                      value={service.id}
                                       key={service.id}
-                                      onSelect={() => {
+                                      onSelect={(currentValue) => {
                                         const currentIds = field.value || [];
-                                        const newIds = currentIds.includes(service.id)
-                                          ? currentIds.filter((id) => id !== service.id)
-                                          : [...currentIds, service.id];
+                                        const newIds = currentIds.includes(currentValue)
+                                          ? currentIds.filter((id) => id !== currentValue)
+                                          : [...currentIds, currentValue];
                                         field.onChange(newIds);
                                       }}
                                     >
                                       <Check
                                         className={cn(
                                           'mr-2 h-4 w-4',
-                                          (field.value || []).includes(service.id) ? 'opacity-100' : 'opacity-0'
+                                          field.value?.includes(service.id) ? 'opacity-100' : 'opacity-0'
                                         )}
                                       />
                                       {service.name}
@@ -379,3 +379,5 @@ export function AppointmentForm({
     </Dialog>
   );
 }
+
+    
