@@ -58,54 +58,54 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Dashboard" description="Welcome back, Carmelinda!" />
+      <PageHeader title="Dashboard" description="Bentornata, Carmelinda!" />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Today's Appointments
+              Appuntamenti di Oggi
             </CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{todayAppointments.length}</div>
             <p className="text-xs text-muted-foreground">
-              scheduled for today
+              programmati per oggi
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
+            <CardTitle className="text-sm font-medium">Clienti Totali</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{customers.length}</div>
-            <p className="text-xs text-muted-foreground">managed in the system</p>
+            <p className="text-xs text-muted-foreground">gestiti nel sistema</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Services Offered</CardTitle>
+            <CardTitle className="text-sm font-medium">Servizi Offerti</CardTitle>
             <Scissors className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{services.length}</div>
             <p className="text-xs text-muted-foreground">
-              available in the catalog
+              disponibili nel catalogo
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Low Stock Items</CardTitle>
+            <CardTitle className="text-sm font-medium">Articoli in Esaurimento</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{lowStockProducts.length}</div>
             <p className="text-xs text-muted-foreground">
-              need reordering
+              necessitano di riordino
             </p>
           </CardContent>
         </Card>
@@ -116,18 +116,18 @@ export default async function DashboardPage() {
 
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>Upcoming Appointments</CardTitle>
+            <CardTitle>Prossimi Appuntamenti</CardTitle>
             <CardDescription>
-              These are your next scheduled appointments for today.
+              Questi sono i tuoi prossimi appuntamenti per oggi.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Service</TableHead>
-                  <TableHead>Time</TableHead>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Servizio</TableHead>
+                  <TableHead>Ora</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -161,7 +161,7 @@ export default async function DashboardPage() {
                  {todayAppointments.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={3} className="h-24 text-center">
-                      No appointments scheduled for today.
+                      Nessun appuntamento programmato per oggi.
                     </TableCell>
                   </TableRow>
                 )}

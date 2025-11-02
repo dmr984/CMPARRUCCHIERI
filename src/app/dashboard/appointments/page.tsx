@@ -24,10 +24,10 @@ export default async function AppointmentsPage() {
 
   return (
     <div>
-      <PageHeader title="Appointments" description="Manage your salon's schedule.">
+      <PageHeader title="Appuntamenti" description="Gestisci il programma del tuo salone.">
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          New Appointment
+          Nuovo Appuntamento
         </Button>
       </PageHeader>
       <AppointmentsView

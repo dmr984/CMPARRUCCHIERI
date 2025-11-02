@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Mail, Phone, Edit, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { it } from 'date-fns/locale';
 
 export default async function CustomerDetailPage({ params }: { params: { id: string } }) {
   const customer = await getCustomerById(params.id);
@@ -32,17 +33,17 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
 
   return (
     <div>
-      <PageHeader title="Customer Details">
+      <PageHeader title="Dettagli Cliente">
         <div className="flex gap-2">
             <Button variant="outline" asChild>
                 <Link href="/dashboard/customers">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Customers
+                    Torna ai Clienti
                 </Link>
             </Button>
             <Button>
                 <Edit className="mr-2 h-4 w-4" />
-                Edit Customer
+                Modifica Cliente
             </Button>
         </div>
       </PageHeader>
@@ -75,11 +76,11 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Preferences & Notes</CardTitle>
+                    <CardTitle>Preferenze e Note</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <p className="text-sm text-muted-foreground">
-                        {customer.preferences || 'No preferences or notes recorded for this client.'}
+                        {customer.preferences || 'Nessuna preferenza o nota registrata per questo cliente.'}
                     </p>
                 </CardContent>
             </Card>
@@ -88,36 +89,36 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
         <div className="lg:col-span-2">
             <Card>
                 <CardHeader>
-                    <CardTitle>Service History</CardTitle>
-                    <CardDescription>A complete log of all services provided to {customer.name}.</CardDescription>
+                    <CardTitle>Storico Servizi</CardTitle>
+                    <CardDescription>Un registro completo di tutti i servizi forniti a {customer.name}.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Service</TableHead>
-                                <TableHead>Stylist</TableHead>
-                                <TableHead>Price</TableHead>
-                                <TableHead>Status</TableHead>
+                                <TableHead>Data</TableHead>
+                                <TableHead>Servizio</TableHead>
+                                <TableHead>Stilista</TableHead>
+                                <TableHead>Prezzo</TableHead>
+                                <TableHead>Stato</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {customerAppointments.map(app => (
                                 <TableRow key={app.id}>
-                                    <TableCell>{format(app.dateTime, 'PPP')}</TableCell>
+                                    <TableCell>{format(app.dateTime, 'PPP', { locale: it })}</TableCell>
                                     <TableCell>{app.service?.name}</TableCell>
                                     <TableCell>{app.staff?.name}</TableCell>
                                     <TableCell>€{app.service?.price.toFixed(2)}</TableCell>
                                     <TableCell>
-                                        <Badge variant={app.status === 'Completed' ? 'secondary' : 'default'}>{app.status}</Badge>
+                                        <Badge variant={app.status === 'Completato' ? 'secondary' : 'default'}>{app.status}</Badge>
                                     </TableCell>
                                 </TableRow>
                             ))}
                              {customerAppointments.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={5} className="h-24 text-center">
-                                    No service history found.
+                                    Nessuno storico servizi trovato.
                                     </TableCell>
                                 </TableRow>
                             )}

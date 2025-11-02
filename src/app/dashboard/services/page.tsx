@@ -23,10 +23,10 @@ export default async function ServicesPage() {
 
   return (
     <div>
-      <PageHeader title="Services" description="Manage your salon's service catalog.">
+      <PageHeader title="Servizi" description="Gestisci il catalogo dei servizi del tuo salone.">
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add Service
+          Aggiungi Servizio
         </Button>
       </PageHeader>
       <Card>
@@ -34,10 +34,10 @@ export default async function ServicesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-1/3">Service</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-1/3">Servizio</TableHead>
+                <TableHead>Durata</TableHead>
+                <TableHead>Prezzo</TableHead>
+                <TableHead className="text-right">Azioni</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -56,13 +56,13 @@ export default async function ServicesPage() {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
                           <MoreVertical className="h-4 w-4" />
-                          <span className="sr-only">Actions</span>
+                          <span className="sr-only">Azioni</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <DropdownMenuItem>Modifica</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">
-                          Delete
+                          Elimina
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

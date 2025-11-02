@@ -16,6 +16,7 @@ import type {
   Staff,
 } from '@/lib/types';
 import { format, isSameDay } from 'date-fns';
+import { it } from 'date-fns/locale';
 import {
   Table,
   TableBody,
@@ -63,6 +64,7 @@ export function AppointmentsView({
             selected={date}
             onSelect={setDate}
             className="w-full"
+            locale={it}
             classNames={{
                 day_cell: 'h-12 w-16 text-center text-sm p-0 relative',
                 day: 'h-12 w-16 p-0 font-normal',
@@ -90,22 +92,22 @@ export function AppointmentsView({
       <Card className="md:col-span-2">
         <CardHeader>
           <CardTitle>
-            Appointments for {date ? format(date, 'MMMM d, yyyy') : '...'}
+            Appuntamenti per {date ? format(date, 'd MMMM yyyy', { locale: it }) : '...'}
           </CardTitle>
           <CardDescription>
-            {selectedDayAppointments.length} appointment(s) scheduled for this day.
+            {selectedDayAppointments.length} appuntamento(i) programmati per questo giorno.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Customer</TableHead>
-                <TableHead>Service</TableHead>
-                <TableHead>Stylist</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead>Servizio</TableHead>
+                <TableHead>Stilista</TableHead>
+                <TableHead>Ora</TableHead>
+                <TableHead>Stato</TableHead>
+                <TableHead className="text-right">Azioni</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -142,9 +144,9 @@ export function AppointmentsView({
                         <TableCell>
                           <Badge
                             variant={
-                              app.status === 'Scheduled'
+                              app.status === 'Programmato'
                                 ? 'default'
-                                : app.status === 'Completed'
+                                : app.status === 'Completato'
                                 ? 'secondary'
                                 : 'destructive'
                             }
@@ -160,10 +162,10 @@ export function AppointmentsView({
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                              <DropdownMenuItem>View Details</DropdownMenuItem>
-                              <DropdownMenuItem>Reschedule</DropdownMenuItem>
+                              <DropdownMenuItem>Vedi Dettagli</DropdownMenuItem>
+                              <DropdownMenuItem>Riprogramma</DropdownMenuItem>
                               <DropdownMenuItem className="text-destructive">
-                                Cancel
+                                Annulla
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -174,7 +176,7 @@ export function AppointmentsView({
               ) : (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center">
-                    No appointments for this day.
+                    Nessun appuntamento per questo giorno.
                   </TableCell>
                 </TableRow>
               )}

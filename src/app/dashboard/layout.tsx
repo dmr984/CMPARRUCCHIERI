@@ -38,12 +38,12 @@ import {
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/appointments', label: 'Appointments', icon: Calendar },
-  { href: '/dashboard/customers', label: 'Customers', icon: Users },
-  { href: '/dashboard/services', label: 'Services', icon: Scissors },
-  { href: '/dashboard/inventory', label: 'Inventory', icon: Package },
-  { href: '/dashboard/reminders', label: 'Reminders', icon: MessageCircle },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+  { href: '/dashboard/appointments', label: 'Appuntamenti', icon: Calendar },
+  { href: '/dashboard/customers', label: 'Clienti', icon: Users },
+  { href: '/dashboard/services', label: 'Servizi', icon: Scissors },
+  { href: '/dashboard/inventory', label: 'Inventario', icon: Package },
+  { href: '/dashboard/reminders', label: 'Promemoria', icon: MessageCircle },
+  { href: '/dashboard/settings', label: 'Impostazioni', icon: Settings },
 ];
 
 export default function DashboardLayout({
@@ -61,7 +61,7 @@ export default function DashboardLayout({
             <Logo />
             <div className="flex flex-col">
               <h2 className="text-lg font-semibold -mb-1">Carmelinda</h2>
-              <p className="text-xs text-muted-foreground">Salon Manager</p>
+              <p className="text-xs text-muted-foreground">Manager del Salone</p>
             </div>
           </div>
         </SidebarHeader>
@@ -102,10 +102,10 @@ export default function DashboardLayout({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="top" align="start" className="w-56 mb-1">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>Il Mio Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem>Profilo</DropdownMenuItem>
+              <DropdownMenuItem>Impostazioni</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Log out</DropdownMenuItem>
             </DropdownMenuContent>
@@ -116,7 +116,7 @@ export default function DashboardLayout({
         <header className="flex items-center justify-between p-4 bg-background/80 backdrop-blur-sm sticky top-0 z-10 border-b md:p-3 md:justify-end">
           <SidebarTrigger className="md:hidden" />
           <div className="items-center gap-4 hidden md:flex">
-             <span className="font-semibold text-sm">Carmelinda Salon Manager</span>
+             <span className="font-semibold text-sm">Carmelinda - Manager del Salone</span>
           </div>
         </header>
         <main className="p-4 md:p-6 lg:p-8">{children}</main>

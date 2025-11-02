@@ -11,7 +11,7 @@ export type Customer = {
 export type Staff = {
   id: string;
   name: string;
-  role: 'Stylist' | 'Manager' | 'Receptionist';
+  role: 'Stilista' | 'Manager' | 'Receptionist';
 };
 
 export type Service = {
@@ -28,7 +28,7 @@ export type Appointment = {
   staffId: string;
   serviceId: string;
   dateTime: Date;
-  status: 'Scheduled' | 'Completed' | 'Cancelled';
+  status: 'Programmato' | 'Completato' | 'Annullato';
 };
 
 export type Product = {

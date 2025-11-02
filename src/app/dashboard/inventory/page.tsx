@@ -25,10 +25,10 @@ export default async function InventoryPage() {
 
   return (
     <div>
-      <PageHeader title="Inventory" description="Track and manage product stock.">
+      <PageHeader title="Inventario" description="Traccia e gestisci lo stock dei prodotti.">
         <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Add Product
+          Aggiungi Prodotto
         </Button>
       </PageHeader>
       <Card>
@@ -36,11 +36,11 @@ export default async function InventoryPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[40%]">Product</TableHead>
-                <TableHead>Stock Level</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-[40%]">Prodotto</TableHead>
+                <TableHead>Livello Stock</TableHead>
+                <TableHead>Stato</TableHead>
+                <TableHead>Prezzo</TableHead>
+                <TableHead className="text-right">Azioni</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -58,12 +58,12 @@ export default async function InventoryPage() {
                     <TableCell>
                       <div className='flex items-center gap-2'>
                         <Progress value={stockPercentage} className="w-24 h-2" />
-                        <span>{product.stock} units</span>
+                        <span>{product.stock} unità</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant={isLowStock ? 'destructive' : 'secondary'}>
-                        {isLowStock ? 'Low Stock' : 'In Stock'}
+                        {isLowStock ? 'Stock Basso' : 'In Stock'}
                       </Badge>
                     </TableCell>
                     <TableCell>€{product.price.toFixed(2)}</TableCell>
@@ -72,14 +72,14 @@ export default async function InventoryPage() {
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon">
                             <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">Actions</span>
+                            <span className="sr-only">Azioni</span>
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Update Stock</DropdownMenuItem>
-                          <DropdownMenuItem>Edit Product</DropdownMenuItem>
+                          <DropdownMenuItem>Aggiorna Stock</DropdownMenuItem>
+                          <DropdownMenuItem>Modifica Prodotto</DropdownMenuItem>
                           <DropdownMenuItem className="text-destructive">
-                            Delete
+                            Elimina
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

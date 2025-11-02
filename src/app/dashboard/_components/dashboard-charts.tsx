@@ -24,7 +24,7 @@ interface DashboardChartsProps {
 
 const chartConfig = {
   appointments: {
-    label: 'Appointments',
+    label: 'Appuntamenti',
     color: 'hsl(var(--primary))',
   },
 } satisfies ChartConfig;
@@ -35,9 +35,9 @@ export function DashboardCharts({
   return (
     <Card className="lg:col-span-4">
       <CardHeader>
-        <CardTitle>Weekly Appointments</CardTitle>
+        <CardTitle>Appuntamenti Settimanali</CardTitle>
         <CardDescription>
-          An overview of appointments scheduled this week.
+          Una panoramica degli appuntamenti programmati questa settimana.
         </CardDescription>
       </CardHeader>
       <CardContent className="pl-2">

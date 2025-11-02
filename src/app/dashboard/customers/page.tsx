@@ -24,16 +24,17 @@ import {
 import { getCustomers } from '@/lib/data';
 import { MoreVertical, PlusCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { it } from 'date-fns/locale';
 
 export default async function CustomersPage() {
   const customers = await getCustomers();
 
   return (
     <div>
-      <PageHeader title="Customers" description="View and manage your client list.">
+      <PageHeader title="Clienti" description="Visualizza e gestisci la tua lista clienti.">
         <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Add Customer
+            Aggiungi Cliente
         </Button>
       </PageHeader>
       <Card>
@@ -41,10 +42,10 @@ export default async function CustomersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Last Visit</TableHead>
-                <TableHead className='text-right'>Actions</TableHead>
+                <TableHead>Nome</TableHead>
+                <TableHead>Contatto</TableHead>
+                <TableHead>Ultima Visita</TableHead>
+                <TableHead className='text-right'>Azioni</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -63,21 +64,21 @@ export default async function CustomersPage() {
                     <div>{customer.email}</div>
                     <div className="text-muted-foreground text-sm">{customer.phone}</div>
                   </TableCell>
-                  <TableCell>{format(customer.lastVisit, 'PPP')}</TableCell>
+                  <TableCell>{format(customer.lastVisit, 'PPP', { locale: it })}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
                           <MoreVertical className="h-4 w-4" />
-                          <span className="sr-only">Actions</span>
+                          <span className="sr-only">Azioni</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/customers/${customer.id}`}>View Details</Link>
+                          <Link href={`/dashboard/customers/${customer.id}`}>Vedi Dettagli</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                        <DropdownMenuItem>Modifica</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive">Elimina</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

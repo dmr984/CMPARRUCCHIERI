@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { format } from 'date-fns';
+import { it } from 'date-fns/locale';
 import { Loader2, MessageCircle, Send } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,7 @@ import type { Customer, Appointment, Service } from '@/lib/types';
 import { personalizedWhatsappReminder } from '@/ai/flows/personalized-whatsapp-reminders';
 
 const formSchema = z.object({
-  appointmentId: z.string().min(1, 'Please select an appointment.'),
+  appointmentId: z.string().min(1, 'Seleziona un appuntamento.'),
 });
 
 interface ReminderFormProps {
@@ -75,29 +76,29 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
     try {
       const result = await personalizedWhatsappReminder({
         customerName: selectedAppointment.customer.name,
-        appointmentDateTime: format(selectedAppointment.dateTime, 'PPP p'),
+        appointmentDateTime: format(selectedAppointment.dateTime, 'PPP p', { locale: it }),
         serviceDetails: selectedAppointment.service.name,
-        salonName: 'Carmelinda Salon',
+        salonName: 'Salone Carmelinda',
         customerPreferences: selectedAppointment.customer.preferences,
         phoneNumber: selectedAppointment.customer.phone,
       });
       setGeneratedMessage(result.message);
     } catch (error) {
-      console.error('Error generating reminder:', error);
-      setGeneratedMessage('Sorry, there was an error generating the message.');
+      console.error('Errore durante la generazione del promemoria:', error);
+      setGeneratedMessage('Spiacenti, si è verificato un errore durante la generazione del messaggio.');
     } finally {
       setIsLoading(false);
     }
   }
 
-  const upcomingAppointments = appointments.filter(a => new Date(a.dateTime) > new Date() && a.status === 'Scheduled');
+  const upcomingAppointments = appointments.filter(a => new Date(a.dateTime) > new Date() && a.status === 'Programmato');
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Card>
         <CardHeader>
-            <CardTitle>Generate Reminder</CardTitle>
-            <CardDescription>Select an appointment to create a personalized message.</CardDescription>
+            <CardTitle>Genera Promemoria</CardTitle>
+            <CardDescription>Seleziona un appuntamento per creare un messaggio personalizzato.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -107,14 +108,14 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
                 name="appointmentId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Upcoming Appointment</FormLabel>
+                    <FormLabel>Prossimo Appuntamento</FormLabel>
                     <Select onValueChange={(value) => {
                       field.onChange(value);
                       handleAppointmentChange(value);
                     }} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select an appointment to remind" />
+                          <SelectValue placeholder="Seleziona un appuntamento per il promemoria" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -122,7 +123,7 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
                             const customer = customers.find(c => c.id === app.customerId);
                             return (
                                 <SelectItem key={app.id} value={app.id}>
-                                    {customer?.name} - {format(app.dateTime, 'MMM d, h:mm a')}
+                                    {customer?.name} - {format(app.dateTime, 'd MMM, h:mm a', { locale: it })}
                                 </SelectItem>
                             )
                         })}
@@ -136,12 +137,12 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
                 {isLoading ? (
                     <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating...
+                        Generazione...
                     </>
                 ) : (
                     <>
                         <MessageCircle className="mr-2 h-4 w-4" />
-                        Generate Message
+                        Genera Messaggio
                     </>
                 )}
               </Button>
@@ -152,13 +153,13 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
       
       <Card className="flex flex-col">
         <CardHeader>
-            <CardTitle>Generated Message</CardTitle>
-            <CardDescription>Review the message below before sending.</CardDescription>
+            <CardTitle>Messaggio Generato</CardTitle>
+            <CardDescription>Controlla il messaggio qui sotto prima di inviarlo.</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow flex flex-col justify-between">
           <Textarea
             readOnly
-            value={generatedMessage || "Your generated message will appear here..."}
+            value={generatedMessage || "Il tuo messaggio generato apparirà qui..."}
             className="flex-grow text-base"
             rows={8}
           />
@@ -166,7 +167,7 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
             <Button asChild className="mt-4 w-full" disabled={!generatedMessage}>
               <a href={`https://wa.me/${selectedAppointment.customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(generatedMessage)}`} target="_blank" rel="noopener noreferrer">
                 <Send className="mr-2 h-4 w-4" />
-                Send via WhatsApp
+                Invia tramite WhatsApp
               </a>
             </Button>
           )}

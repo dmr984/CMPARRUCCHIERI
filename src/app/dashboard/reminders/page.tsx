@@ -10,8 +10,8 @@ export default async function RemindersPage() {
   return (
     <div>
       <PageHeader 
-        title="AI WhatsApp Reminders" 
-        description="Generate and send personalized appointment reminders to your clients." 
+        title="Promemoria AI via WhatsApp" 
+        description="Genera e invia promemoria personalizzati per gli appuntamenti ai tuoi clienti." 
       />
       <div className="mt-8">
         <ReminderForm customers={customers} appointments={appointments} services={services} />

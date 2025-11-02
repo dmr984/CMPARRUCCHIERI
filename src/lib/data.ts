@@ -7,17 +7,17 @@ const now = new Date();
 const getAvatar = (id: string) => PlaceHolderImages.find(img => img.id === id)?.imageUrl || '';
 
 export const customers: Customer[] = [
-  { id: '1', name: 'Elena Rossi', email: 'elena.rossi@example.com', phone: '+393331234567', avatarUrl: getAvatar('customer-1'), lastVisit: subDays(now, 10), preferences: 'Loves lavender scent, prefers coffee over tea.' },
+  { id: '1', name: 'Elena Rossi', email: 'elena.rossi@example.com', phone: '+393331234567', avatarUrl: getAvatar('customer-1'), lastVisit: subDays(now, 10), preferences: 'Adora il profumo di lavanda, preferisce il caffè al tè.' },
   { id: '2', name: 'Marco Bianchi', email: 'marco.bianchi@example.com', phone: '+393332345678', avatarUrl: getAvatar('customer-2'), lastVisit: subDays(now, 25) },
-  { id: '3', name: 'Giulia Romano', email: 'giulia.romano@example.com', phone: '+393333456789', avatarUrl: getAvatar('customer-3'), lastVisit: subDays(now, 5), preferences: 'Allergic to nuts.' },
+  { id: '3', name: 'Giulia Romano', email: 'giulia.romano@example.com', phone: '+393333456789', avatarUrl: getAvatar('customer-3'), lastVisit: subDays(now, 5), preferences: 'Allergica alle noci.' },
   { id: '4', name: 'Sofia Ricci', email: 'sofia.ricci@example.com', phone: '+393334567890', avatarUrl: getAvatar('customer-4'), lastVisit: subDays(now, 40) },
   { id: '5', name: 'Alessandro Ferri', email: 'alessandro.ferri@example.com', phone: '+393335678901', avatarUrl: getAvatar('customer-5'), lastVisit: subDays(now, 15) },
 ];
 
 export const staff: Staff[] = [
   { id: '1', name: 'Carmelinda', role: 'Manager' },
-  { id: '2', name: 'Beatrice', role: 'Stylist' },
-  { id: '3', name: 'Valentina', role: 'Stylist' },
+  { id: '2', name: 'Beatrice', role: 'Stilista' },
+  { id: '3', name: 'Valentina', role: 'Stilista' },
 ];
 
 export const services: Service[] = [
@@ -30,12 +30,12 @@ export const services: Service[] = [
 ];
 
 export const appointments: Appointment[] = [
-  { id: '1', customerId: '3', staffId: '2', serviceId: '1', dateTime: set(now, { hours: 10, minutes: 0, seconds: 0, milliseconds: 0 }), status: 'Scheduled' },
-  { id: '2', customerId: '1', staffId: '3', serviceId: '2', dateTime: set(now, { hours: 14, minutes: 30, seconds: 0, milliseconds: 0 }), status: 'Scheduled' },
-  { id: '3', customerId: '5', staffId: '2', serviceId: '4', dateTime: addHours(now, 2), status: 'Scheduled' },
-  { id: '4', customerId: '2', staffId: '3', serviceId: '1', dateTime: subDays(now, 2), status: 'Completed' },
-  { id: '5', customerId: '4', staffId: '2', serviceId: '6', dateTime: subDays(now, 5), status: 'Completed' },
-  { id: '6', customerId: '1', staffId: '3', serviceId: '3', dateTime: subDays(now, 10), status: 'Completed' },
+  { id: '1', customerId: '3', staffId: '2', serviceId: '1', dateTime: set(now, { hours: 10, minutes: 0, seconds: 0, milliseconds: 0 }), status: 'Programmato' },
+  { id: '2', customerId: '1', staffId: '3', serviceId: '2', dateTime: set(now, { hours: 14, minutes: 30, seconds: 0, milliseconds: 0 }), status: 'Programmato' },
+  { id: '3', customerId: '5', staffId: '2', serviceId: '4', dateTime: addHours(now, 2), status: 'Programmato' },
+  { id: '4', customerId: '2', staffId: '3', serviceId: '1', dateTime: subDays(now, 2), status: 'Completato' },
+  { id: '5', customerId: '4', staffId: '2', serviceId: '6', dateTime: subDays(now, 5), status: 'Completato' },
+  { id: '6', customerId: '1', staffId: '3', serviceId: '3', dateTime: subDays(now, 10), status: 'Completato' },
 ];
 
 export const products: Product[] = [
