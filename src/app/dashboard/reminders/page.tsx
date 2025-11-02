@@ -1,0 +1,21 @@
+import { getCustomers, getAppointments, getServices } from '@/lib/data';
+import { ReminderForm } from './_components/reminder-form';
+import { PageHeader } from '@/components/page-header';
+
+export default async function RemindersPage() {
+  const customers = await getCustomers();
+  const appointments = await getAppointments();
+  const services = await getServices();
+  
+  return (
+    <div>
+      <PageHeader 
+        title="AI WhatsApp Reminders" 
+        description="Generate and send personalized appointment reminders to your clients." 
+      />
+      <div className="mt-8">
+        <ReminderForm customers={customers} appointments={appointments} services={services} />
+      </div>
+    </div>
+  );
+}
