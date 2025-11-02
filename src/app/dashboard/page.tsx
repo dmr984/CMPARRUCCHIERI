@@ -135,9 +135,7 @@ export default async function DashboardPage() {
                   const customer = customers.find(
                     (c) => c.id === app.customerId
                   );
-                  const service = services.find(
-                    (s) => s.id === app.serviceId
-                  );
+                  const appointmentServices = services.filter(s => app.serviceIds.includes(s.id));
                   return (
                     <TableRow key={app.id}>
                       <TableCell>
@@ -152,7 +150,13 @@ export default async function DashboardPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{service?.name}</Badge>
+                        <div className="flex flex-col gap-1">
+                          {appointmentServices.map(service => (
+                            <Badge key={service.id} variant="secondary" className="whitespace-nowrap">
+                              {service.name}
+                            </Badge>
+                          ))}
+                        </div>
                       </TableCell>
                       <TableCell>{format(app.dateTime, 'HH:mm')}</TableCell>
                     </TableRow>
