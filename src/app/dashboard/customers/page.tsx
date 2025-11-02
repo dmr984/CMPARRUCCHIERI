@@ -1,10 +1,10 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -14,7 +14,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,16 +24,64 @@ import { getCustomers } from '@/lib/data';
 import { MoreVertical, PlusCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
+import type { Customer } from '@/lib/types';
+import { CustomerForm } from './_components/customer-form';
 
-export default async function CustomersPage() {
-  const customers = await getCustomers();
+export default function CustomersPage() {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
+
+  useEffect(() => {
+    async function fetchData() {
+      setCustomers(await getCustomers());
+    }
+    fetchData();
+  }, []);
+
+  const handleNewCustomer = () => {
+    setEditingCustomer(undefined);
+    setIsFormOpen(true);
+  };
+
+  const handleEditCustomer = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setIsFormOpen(true);
+  };
+
+  const handleFormSave = (customerData: Omit<Customer, 'id' | 'lastVisit' | 'avatarUrl'> & { id?: string }) => {
+    if (customerData.id) {
+      setCustomers(
+        customers.map((c) =>
+          c.id === customerData.id ? { ...c, ...customerData } : c
+        )
+      );
+    } else {
+      const newId = (Math.max(0, ...customers.map((c) => parseInt(c.id))) + 1).toString();
+      const newCustomer: Customer = {
+        ...customerData,
+        id: newId,
+        lastVisit: new Date(),
+        avatarUrl: `https://picsum.photos/seed/${newId}/100/100`,
+      };
+      setCustomers([...customers, newCustomer]);
+    }
+    setIsFormOpen(false);
+  };
+
+  const handleFormCancel = () => {
+    setIsFormOpen(false);
+  };
 
   return (
     <div>
-      <PageHeader title="Clienti" description="Visualizza e gestisci la tua lista clienti.">
-        <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Aggiungi Cliente
+      <PageHeader
+        title="Clienti"
+        description="Visualizza e gestisci la tua lista clienti."
+      >
+        <Button onClick={handleNewCustomer}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Aggiungi Cliente
         </Button>
       </PageHeader>
       <Card>
@@ -45,7 +92,7 @@ export default async function CustomersPage() {
                 <TableHead>Nome</TableHead>
                 <TableHead>Contatto</TableHead>
                 <TableHead>Ultima Visita</TableHead>
-                <TableHead className='text-right'>Azioni</TableHead>
+                <TableHead className="text-right">Azioni</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -54,17 +101,26 @@ export default async function CustomersPage() {
                   <TableCell>
                     <div className="flex items-center gap-4">
                       <Avatar>
-                        <AvatarImage src={customer.avatarUrl} alt={customer.name} />
-                        <AvatarFallback>{customer.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        <AvatarImage
+                          src={customer.avatarUrl}
+                          alt={customer.name}
+                        />
+                        <AvatarFallback>
+                          {customer.name.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
                       </Avatar>
                       <div className="font-medium">{customer.name}</div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div>{customer.email}</div>
-                    <div className="text-muted-foreground text-sm">{customer.phone}</div>
+                    <div className="text-muted-foreground text-sm">
+                      {customer.phone}
+                    </div>
                   </TableCell>
-                  <TableCell>{format(customer.lastVisit, 'PPP', { locale: it })}</TableCell>
+                  <TableCell>
+                    {format(customer.lastVisit, 'PPP', { locale: it })}
+                  </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -75,10 +131,18 @@ export default async function CustomersPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/customers/${customer.id}`}>Vedi Dettagli</Link>
+                          <Link href={`/dashboard/customers/${customer.id}`}>
+                            Vedi Dettagli
+                          </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>Modifica</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Elimina</DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleEditCustomer(customer)}
+                        >
+                          Modifica
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive">
+                          Elimina
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -88,6 +152,12 @@ export default async function CustomersPage() {
           </Table>
         </CardContent>
       </Card>
+      <CustomerForm
+        isOpen={isFormOpen}
+        onClose={handleFormCancel}
+        onSave={handleFormSave}
+        customer={editingCustomer}
+      />
     </div>
   );
 }
