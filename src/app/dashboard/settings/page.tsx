@@ -69,7 +69,7 @@ export default function SettingsPage() {
                 <Label htmlFor="salon-address">Indirizzo</Label>
                 <Input id="salon-address" value={salonAddress} onChange={(e) => setSalonAddress(e.target.value)} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="salon-phone">Numero di Telefono</Label>
                   <Input id="salon-phone" value={salonPhone} onChange={(e) => setSalonPhone(e.target.value)} />
