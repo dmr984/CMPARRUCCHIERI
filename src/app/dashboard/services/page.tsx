@@ -1,6 +1,12 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+} from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -17,14 +23,50 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { getServices } from '@/lib/data';
 import { MoreVertical, PlusCircle } from 'lucide-react';
+import type { Service } from '@/lib/types';
+import { ServiceForm } from './_components/service-form';
 
-export default async function ServicesPage() {
-  const services = await getServices();
+export default function ServicesPage() {
+  const [services, setServices] = useState<Service[]>([]);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingService, setEditingService] = useState<Service | undefined>(undefined);
+
+  useEffect(() => {
+    async function fetchData() {
+      setServices(await getServices());
+    }
+    fetchData();
+  }, []);
+
+  const handleNewService = () => {
+    setEditingService(undefined);
+    setIsFormOpen(true);
+  }
+
+  const handleEditService = (service: Service) => {
+    setEditingService(service);
+    setIsFormOpen(true);
+  }
+
+  const handleFormSave = (serviceData: Omit<Service, 'id'> & { id?: string }) => {
+    if (serviceData.id) {
+        setServices(services.map(s => s.id === serviceData.id ? { ...s, ...serviceData } as Service : s));
+    } else {
+        const newId = (Math.max(...services.map(s => parseInt(s.id))) + 1).toString();
+        setServices([...services, { ...serviceData, id: newId } as Service]);
+    }
+    setIsFormOpen(false);
+  }
+  
+  const handleFormCancel = () => {
+    setIsFormOpen(false);
+  }
+
 
   return (
     <div>
       <PageHeader title="Servizi" description="Gestisci il catalogo dei servizi del tuo salone.">
-        <Button>
+        <Button onClick={handleNewService}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Aggiungi Servizio
         </Button>
@@ -60,7 +102,7 @@ export default async function ServicesPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Modifica</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditService(service)}>Modifica</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">
                           Elimina
                         </DropdownMenuItem>
@@ -73,6 +115,12 @@ export default async function ServicesPage() {
           </Table>
         </CardContent>
       </Card>
+      <ServiceForm 
+        isOpen={isFormOpen}
+        onClose={handleFormCancel}
+        onSave={handleFormSave}
+        service={editingService}
+      />
     </div>
   );
 }
