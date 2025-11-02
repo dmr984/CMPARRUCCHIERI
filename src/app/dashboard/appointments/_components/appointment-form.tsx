@@ -81,7 +81,6 @@ export function AppointmentForm({
   services,
   staff,
 }: AppointmentFormProps) {
-  const [isServicesPopoverOpen, setServicesPopoverOpen] = useState(false);
   const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -184,7 +183,7 @@ export function AppointmentForm({
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <FormLabel>Servizi</FormLabel>
-                        <Popover open={isServicesPopoverOpen} onOpenChange={setServicesPopoverOpen}>
+                        <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
                               <Button
@@ -216,7 +215,7 @@ export function AppointmentForm({
                                 <CommandGroup>
                                   {services.map((service) => (
                                     <CommandItem
-                                      value={service.id}
+                                      value={service.name}
                                       key={service.id}
                                       onSelect={() => {
                                         const currentIds = field.value || [];
@@ -224,7 +223,6 @@ export function AppointmentForm({
                                           ? currentIds.filter((id) => id !== service.id)
                                           : [...currentIds, service.id];
                                         field.onChange(newIds);
-                                        // setServicesPopoverOpen(false); // Optionally close on select
                                       }}
                                     >
                                       <Check
@@ -381,5 +379,3 @@ export function AppointmentForm({
     </Dialog>
   );
 }
-
-    
