@@ -22,13 +22,16 @@ export type Service = {
   price: number;
 };
 
+export type AppointmentStatus = 'Programmato' | 'Completato' | 'Annullato';
+
 export type Appointment = {
   id: string;
   customerId: string;
   staffId: string;
   serviceId: string;
   dateTime: Date;
-  status: 'Programmato' | 'Completato' | 'Annullato';
+  status: AppointmentStatus;
+  notes?: string;
 };
 
 export type Product = {
