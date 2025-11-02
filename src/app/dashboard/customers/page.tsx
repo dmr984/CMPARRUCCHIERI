@@ -54,7 +54,7 @@ export default function CustomersPage() {
       // Logic for editing an existing customer
       setCustomers(customers.map(c => 
         c.id === customerData.id 
-          ? { ...c, ...customerData } 
+          ? { ...c, ...customerData, lastVisit: c.lastVisit, avatarUrl: c.avatarUrl } as Customer
           : c
       ));
     } else {

@@ -53,7 +53,8 @@ export default function ServicesPage() {
         setServices(services.map(s => s.id === serviceData.id ? { ...s, ...serviceData } as Service : s));
     } else {
         const newId = (Math.max(0, ...services.map(s => parseInt(s.id))) + 1).toString();
-        setServices([...services, { ...serviceData, id: newId } as Service]);
+        const newService = { ...serviceData, id: newId } as Service;
+        setServices([...services, newService]);
     }
     setIsFormOpen(false);
   }
