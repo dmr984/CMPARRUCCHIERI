@@ -51,16 +51,21 @@ export default function CustomersPage() {
 
   const handleFormSave = (customerData: Omit<Customer, 'id' | 'lastVisit' | 'avatarUrl'> & { id?: string }) => {
     if (customerData.id) {
-      setCustomers(
-        customers.map((c) =>
-          c.id === customerData.id ? { ...c, ...customerData } : c
-        )
-      );
+      // Logic for editing an existing customer
+      setCustomers(customers.map(c => 
+        c.id === customerData.id 
+          ? { ...c, ...customerData } 
+          : c
+      ));
     } else {
-      const newId = (Math.max(0, ...customers.map((c) => parseInt(c.id))) + 1).toString();
+      // Logic for adding a new customer
+      const newId = (Math.max(0, ...customers.map(c => parseInt(c.id))) + 1).toString();
       const newCustomer: Customer = {
-        ...customerData,
         id: newId,
+        name: customerData.name,
+        email: customerData.email,
+        phone: customerData.phone,
+        preferences: customerData.preferences,
         lastVisit: new Date(),
         avatarUrl: `https://picsum.photos/seed/${newId}/100/100`,
       };
