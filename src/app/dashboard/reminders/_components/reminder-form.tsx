@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -51,36 +50,20 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
     },
   });
 
-  const handleAppointmentChange = (appointmentId: string) => {
-    const appointment = appointments.find((a) => a.id === appointmentId);
-    if (appointment) {
-      const customer = customers.find((c) => c.id === appointment.customerId);
-      const service = services.find((s) => s.id === appointment.serviceId);
-      setSelectedAppointment({
-        ...appointment,
-        customer,
-        service,
-      });
-    } else {
-        setSelectedAppointment(null);
-    }
-    setGeneratedMessage('');
-  };
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!selectedAppointment) return;
+  const generateMessage = async (appointment: any) => {
+    if (!appointment) return;
 
     setIsLoading(true);
     setGeneratedMessage('');
 
     try {
       const result = await personalizedWhatsappReminder({
-        customerName: selectedAppointment.customer.name,
-        appointmentDateTime: format(selectedAppointment.dateTime, 'PPP p', { locale: it }),
-        serviceDetails: selectedAppointment.service.name,
+        customerName: appointment.customer.name,
+        appointmentDateTime: format(appointment.dateTime, 'PPP p', { locale: it }),
+        serviceDetails: appointment.service.name,
         salonName: 'Salone Carmelinda',
-        customerPreferences: selectedAppointment.customer.preferences,
-        phoneNumber: selectedAppointment.customer.phone,
+        customerPreferences: appointment.customer.preferences,
+        phoneNumber: appointment.customer.phone,
       });
       setGeneratedMessage(result.message);
     } catch (error) {
@@ -89,7 +72,25 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
     } finally {
       setIsLoading(false);
     }
-  }
+  };
+
+  const handleAppointmentChange = (appointmentId: string) => {
+    const appointment = appointments.find((a) => a.id === appointmentId);
+    if (appointment) {
+      const customer = customers.find((c) => c.id === appointment.customerId);
+      const service = services.find((s) => s.id === appointment.serviceId);
+      const fullAppointmentDetails = {
+        ...appointment,
+        customer,
+        service,
+      };
+      setSelectedAppointment(fullAppointmentDetails);
+      generateMessage(fullAppointmentDetails);
+    } else {
+        setSelectedAppointment(null);
+        setGeneratedMessage('');
+    }
+  };
 
   const upcomingAppointments = appointments.filter(a => new Date(a.dateTime) > new Date() && a.status === 'Programmato');
 
@@ -98,11 +99,11 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
       <Card>
         <CardHeader>
             <CardTitle>Genera Promemoria</CardTitle>
-            <CardDescription>Seleziona un appuntamento per creare un messaggio personalizzato.</CardDescription>
+            <CardDescription>Seleziona un appuntamento per creare e inviare un messaggio personalizzato.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form className="space-y-8">
               <FormField
                 control={form.control}
                 name="appointmentId"
@@ -115,7 +116,7 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
                     }} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Seleziona un appuntamento per il promemoria" />
+                          <SelectValue placeholder="Seleziona un appuntamento" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -133,19 +134,6 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={!selectedAppointment || isLoading}>
-                {isLoading ? (
-                    <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generazione...
-                    </>
-                ) : (
-                    <>
-                        <MessageCircle className="mr-2 h-4 w-4" />
-                        Genera Messaggio
-                    </>
-                )}
-              </Button>
             </form>
           </Form>
         </CardContent>
@@ -153,17 +141,27 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
       
       <Card className="flex flex-col">
         <CardHeader>
-            <CardTitle>Messaggio Generato</CardTitle>
-            <CardDescription>Controlla il messaggio qui sotto prima di inviarlo.</CardDescription>
+            <CardTitle>Messaggio WhatsApp</CardTitle>
+            <CardDescription>Controlla il messaggio generato e invialo al cliente.</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow flex flex-col justify-between">
-          <Textarea
-            readOnly
-            value={generatedMessage || "Il tuo messaggio generato apparirà qui..."}
-            className="flex-grow text-base"
-            rows={8}
-          />
-          {generatedMessage && selectedAppointment && (
+            {isLoading ? (
+                 <div className="flex-grow flex items-center justify-center">
+                    <div className='flex flex-col items-center gap-2'>
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <p className='text-muted-foreground'>Generazione del messaggio...</p>
+                    </div>
+                </div>
+            ) : (
+                <Textarea
+                    readOnly
+                    value={generatedMessage || "Seleziona un appuntamento per generare un messaggio."}
+                    className="flex-grow text-base"
+                    rows={8}
+                />
+            )}
+         
+          {generatedMessage && !isLoading && selectedAppointment && (
             <Button asChild className="mt-4 w-full" disabled={!generatedMessage}>
               <a href={`https://wa.me/${selectedAppointment.customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(generatedMessage)}`} target="_blank" rel="noopener noreferrer">
                 <Send className="mr-2 h-4 w-4" />
