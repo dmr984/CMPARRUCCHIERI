@@ -42,6 +42,7 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
   const [generatedMessage, setGeneratedMessage] = useState('');
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [salonPhone] = useState('+39061234567'); // Static salon phone
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -95,7 +96,7 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
   const upcomingAppointments = appointments.filter(a => new Date(a.dateTime) > new Date() && a.status === 'Programmato');
 
   return (
-    <div className="grid gap-8 md:grid-cols-2">
+    <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
       <Card>
         <CardHeader>
             <CardTitle>Genera Promemoria</CardTitle>
@@ -142,7 +143,7 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
       <Card className="flex flex-col">
         <CardHeader>
             <CardTitle>Messaggio WhatsApp</CardTitle>
-            <CardDescription>Controlla il messaggio generato e invialo al cliente.</CardDescription>
+            <CardDescription>Controlla il messaggio generato e invialo al tuo telefono per inoltrarlo.</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow flex flex-col justify-between">
             {isLoading ? (
@@ -163,9 +164,9 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
          
           {generatedMessage && !isLoading && selectedAppointment && (
             <Button asChild className="mt-4 w-full" disabled={!generatedMessage}>
-              <a href={`https://wa.me/${selectedAppointment.customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(generatedMessage)}`} target="_blank" rel="noopener noreferrer">
+              <a href={`https://wa.me/${salonPhone.replace(/\D/g, '')}?text=${encodeURIComponent(generatedMessage)}`} target="_blank" rel="noopener noreferrer">
                 <Send className="mr-2 h-4 w-4" />
-                Invia tramite WhatsApp
+                Invia a te stesso tramite WhatsApp
               </a>
             </Button>
           )}

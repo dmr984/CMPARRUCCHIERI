@@ -34,7 +34,7 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
   return (
     <div>
       <PageHeader title="Dettagli Cliente">
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
             <Button variant="outline" asChild>
                 <Link href="/dashboard/customers">
                     <ArrowLeft className="mr-2 h-4 w-4" />
