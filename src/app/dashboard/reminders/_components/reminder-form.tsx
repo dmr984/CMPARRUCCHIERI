@@ -50,18 +50,27 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
       appointmentId: '',
     },
   });
+  
+  const getServicesForAppointment = (serviceIds: string[]) => {
+    return serviceIds
+      .map(id => services.find(s => s.id === id))
+      .filter((s): s is Service => !!s);
+  };
 
   const generateMessage = async (appointment: any) => {
     if (!appointment) return;
 
     setIsLoading(true);
     setGeneratedMessage('');
+    
+    const appointmentServices = getServicesForAppointment(appointment.serviceIds);
+    const serviceDetails = appointmentServices.map(s => s.name).join(', ');
 
     try {
       const result = await personalizedWhatsappReminder({
         customerName: appointment.customer.name,
         appointmentDateTime: format(appointment.dateTime, 'PPP p', { locale: it }),
-        serviceDetails: appointment.service.name,
+        serviceDetails: serviceDetails,
         salonName: 'Salone Carmelinda',
         customerPreferences: appointment.customer.preferences,
         phoneNumber: appointment.customer.phone,
@@ -79,11 +88,11 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
     const appointment = appointments.find((a) => a.id === appointmentId);
     if (appointment) {
       const customer = customers.find((c) => c.id === appointment.customerId);
-      const service = services.find((s) => s.id === appointment.serviceId);
+      const appointmentServices = getServicesForAppointment(appointment.serviceIds);
       const fullAppointmentDetails = {
         ...appointment,
         customer,
-        service,
+        services: appointmentServices,
       };
       setSelectedAppointment(fullAppointmentDetails);
       generateMessage(fullAppointmentDetails);
