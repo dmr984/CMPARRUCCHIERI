@@ -220,14 +220,19 @@ export function AppointmentForm({
                                 <CommandGroup>
                                   {services.map((service) => (
                                     <CommandItem
-                                      value={service.name}
+                                      value={service.id}
                                       key={service.id}
-                                      onSelect={() => {
-                                        field.onChange(
-                                            field.value?.includes(service.id)
-                                            ? field.value?.filter((id) => id !== service.id)
-                                            : [...(field.value || []), service.id]
-                                        )
+                                      onSelect={(currentValue) => {
+                                        const currentServiceIds = field.value || [];
+                                        const isSelected = currentServiceIds.includes(currentValue);
+                                        if (isSelected) {
+                                          form.setValue(
+                                            "serviceIds",
+                                            currentServiceIds.filter((id) => id !== currentValue)
+                                          );
+                                        } else {
+                                          form.setValue("serviceIds", [...currentServiceIds, currentValue]);
+                                        }
                                       }}
                                     >
                                       <Check
