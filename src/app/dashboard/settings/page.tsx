@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -8,29 +8,64 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Save } from 'lucide-react';
+import { Loader2, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useFirebase } from '@/firebase/provider';
+import { getSalonProfile, saveSalonProfile } from '@/lib/data';
+import type { SalonProfile } from '@/lib/types';
 
 export default function SettingsPage() {
+  const { db, isConfigured } = useFirebase();
   const { toast } = useToast();
 
   // State for Profile settings
-  const [salonName, setSalonName] = useState('Salone Carmelinda');
-  const [salonAddress, setSalonAddress] = useState('Via Roma, 1, 00184 Roma RM, Italia');
-  const [salonPhone, setSalonPhone] = useState('+39 06 1234567');
-  const [salonEmail, setSalonEmail] = useState('contatti@carmelindasalon.it');
+  const [salonProfile, setSalonProfile] = useState<SalonProfile>({
+    name: 'Salone Carmelinda',
+    address: 'Via Roma, 1, 00184 Roma RM, Italia',
+    phone: '+39 06 1234567',
+    email: 'contatti@carmelindasalon.it',
+  });
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   // State for Notification settings
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [stockAlerts, setStockAlerts] = useState(true);
+
+  const fetchProfile = useCallback(async () => {
+    if (!isConfigured || !db) return;
+    setIsLoading(true);
+    try {
+      const profile = await getSalonProfile(db);
+      if (profile) {
+        setSalonProfile(profile);
+      }
+    } catch (error) {
+      console.error("Failed to fetch salon profile:", error);
+      toast({
+        title: "Errore",
+        description: "Impossibile caricare il profilo del salone.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [db, isConfigured, toast]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
   
   const handleProfileSave = () => {
-    // In a real app, you would save this data to your backend.
-    console.log('Salvataggio profilo:', { salonName, salonAddress, salonPhone, salonEmail });
+    if (!db) return;
+    setIsSaving(true);
+    saveSalonProfile(db, salonProfile);
     toast({
       title: 'Profilo salvato!',
       description: 'Le informazioni del salone sono state aggiornate.',
     });
+    setIsSaving(false);
   };
 
   const handleNotificationsSave = () => {
@@ -42,6 +77,10 @@ export default function SettingsPage() {
     });
   };
 
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setSalonProfile(prev => ({ ...prev, [id]: value }));
+  }
 
   return (
     <div className="space-y-8">
@@ -60,29 +99,37 @@ export default function SettingsPage() {
               <CardTitle>Profilo Salone</CardTitle>
               <CardDescription>Aggiorna le informazioni pubbliche del tuo salone.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="salon-name">Nome Salone</Label>
-                <Input id="salon-name" value={salonName} onChange={(e) => setSalonName(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="salon-address">Indirizzo</Label>
-                <Input id="salon-address" value={salonAddress} onChange={(e) => setSalonAddress(e.target.value)} />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="salon-phone">Numero di Telefono</Label>
-                  <Input id="salon-phone" value={salonPhone} onChange={(e) => setSalonPhone(e.target.value)} />
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center h-48">
+                  <Loader2 className="h-8 w-8 animate-spin" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="salon-email">Email</Label>
-                  <Input id="salon-email" type="email" value={salonEmail} onChange={(e) => setSalonEmail(e.target.value)} />
+              ) : (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Nome Salone</Label>
+                    <Input id="name" value={salonProfile.name} onChange={handleProfileChange} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Indirizzo</Label>
+                    <Input id="address" value={salonProfile.address} onChange={handleProfileChange} />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Numero di Telefono</Label>
+                      <Input id="phone" value={salonProfile.phone} onChange={handleProfileChange} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input id="email" type="email" value={salonProfile.email} onChange={handleProfileChange} />
+                    </div>
+                  </div>
+                  <Button className="mt-4" onClick={handleProfileSave} disabled={isSaving}>
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+                    Salva Modifiche
+                  </Button>
                 </div>
-              </div>
-              <Button className="mt-4" onClick={handleProfileSave}>
-                <Save className="mr-2 h-4 w-4"/>
-                Salva Modifiche
-              </Button>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

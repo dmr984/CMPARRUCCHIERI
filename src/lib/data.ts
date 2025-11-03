@@ -1,19 +1,23 @@
 import { Timestamp, collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
 import type { Firestore } from 'firebase/firestore';
-import type { Customer, Staff, Service, Appointment, Product } from './types';
+import type { Customer, Staff, Service, Appointment, Product, SalonProfile } from './types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 const handleFirestoreError = (error: any, path: string, operation: 'get' | 'list' | 'create' | 'update' | 'delete', requestData?: any) => {
-  const permissionError = new FirestorePermissionError({
-    path,
-    operation,
-    requestResourceData: requestData,
-  });
-  errorEmitter.emit('permission-error', permissionError);
-  // Non rilanciare l'errore per non interrompere il flusso con un errore non gestito
-  // ma loggalo per visibilità se necessario (anche se l'emitter dovrebbe essere sufficiente)
-  console.error(`Caught permission error for ${operation} on ${path}`, error);
+  // We only want to handle permission errors, re-throw others
+  if (error.code === 'permission-denied') {
+    const permissionError = new FirestorePermissionError({
+      path,
+      operation,
+      requestResourceData: requestData,
+    });
+    errorEmitter.emit('permission-error', permissionError);
+    // Non rilanciare l'errore per non interrompere il flusso con un errore non gestito
+    console.error(`Caught permission error for ${operation} on ${path}`, error);
+  } else {
+    throw error;
+  }
 };
 
 
@@ -30,7 +34,7 @@ export const getCustomers = async (db: Firestore): Promise<Customer[]> => {
           lastVisit: (data.lastVisit as Timestamp).toDate(),
        } as Customer
     });
-  } catch (error) {
+  } catch (error: any) {
     handleFirestoreError(error, collectionRef.path, 'list');
     return [];
   }
@@ -48,24 +52,24 @@ export const getCustomerById = async (db: Firestore, id: string): Promise<Custom
           lastVisit: (data.lastVisit as Timestamp).toDate(),
       } as Customer;
     }
-  } catch(error) {
+  } catch(error: any) {
     handleFirestoreError(error, docRef.path, 'get');
   }
   return undefined;
 };
 
-export const saveCustomer = (db: Firestore, customer: Omit<Customer, 'id'> & { id?: string }): void => {
+export const saveCustomer = (db: Firestore, customer: Omit<Customer, 'id' | 'lastVisit' | 'avatarUrl'> & { id?: string }): void => {
   if (customer.id) {
     const docRef = doc(db, 'customers', customer.id);
-    const dataToSave = {
-        ...customer,
-        lastVisit: customer.lastVisit instanceof Date ? Timestamp.fromDate(customer.lastVisit) : customer.lastVisit
+    const { id, ...dataToSave } = customer; // Remove id from data
+    const finalData = {
+        ...dataToSave,
+        lastVisit: new Date() // Assuming lastVisit is updated on every save
     };
-    setDoc(docRef, dataToSave, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', dataToSave));
+    setDoc(docRef, finalData, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', finalData));
   } else {
-    const { id, ...data } = customer; // Rimuove l'id esplicitamente
     const newCustomer = {
-        ...data,
+        ...customer,
         lastVisit: Timestamp.now(),
         avatarUrl: `https://picsum.photos/seed/${Math.random()}/100/100`,
     };
@@ -73,6 +77,7 @@ export const saveCustomer = (db: Firestore, customer: Omit<Customer, 'id'> & { i
     addDoc(collectionRef, newCustomer).catch((error) => handleFirestoreError(error, collectionRef.path, 'create', newCustomer));
   }
 };
+
 
 export const deleteCustomer = (db: Firestore, customerId: string): void => {
     const docRef = doc(db, 'customers', customerId);
@@ -85,7 +90,7 @@ export const getStaff = async (db: Firestore): Promise<Staff[]> => {
     try {
         const snapshot = await getDocs(collectionRef);
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Staff));
-    } catch(error) {
+    } catch(error: any) {
         handleFirestoreError(error, collectionRef.path, 'list');
         return [];
     }
@@ -97,7 +102,7 @@ export const getServices = async (db: Firestore): Promise<Service[]> => {
     try {
         const snapshot = await getDocs(collectionRef);
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
-    } catch(error) {
+    } catch(error: any) {
         handleFirestoreError(error, collectionRef.path, 'list');
         return [];
     }
@@ -133,7 +138,7 @@ export const getAppointments = async (db: Firestore): Promise<Appointment[]> => 
                 dateTime: (data.dateTime as Timestamp).toDate(),
             } as Appointment
         });
-    } catch (error) {
+    } catch (error: any) {
         handleFirestoreError(error, collectionRef.path, 'list');
         return [];
     }
@@ -167,7 +172,7 @@ export const getProducts = async (db: Firestore): Promise<Product[]> => {
     try {
         const snapshot = await getDocs(collectionRef);
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-    } catch (error) {
+    } catch (error: any) {
         handleFirestoreError(error, collectionRef.path, 'list');
         return [];
     }
@@ -186,8 +191,29 @@ export const saveProduct = (db: Firestore, product: Omit<Product, 'id'> & { id?:
 
 export const deleteProduct = (db: Firestore, productId: string): void => {
     const docRef = doc(db, 'products', productId);
-    deleteDoc(docRef).catch((error) => handleFirestoreError(error, docRef.path, 'delete'));
+deleteDoc(docRef).catch((error) => handleFirestoreError(error, docRef.path, 'delete'));
 }
+
+// SALON PROFILE
+export const getSalonProfile = async (db: Firestore): Promise<SalonProfile | null> => {
+    const docRef = doc(db, 'salon', 'profile');
+    try {
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return docSnap.data() as SalonProfile;
+        }
+        return null;
+    } catch (error: any) {
+        handleFirestoreError(error, docRef.path, 'get');
+        return null;
+    }
+}
+
+export const saveSalonProfile = (db: Firestore, profile: SalonProfile): void => {
+    const docRef = doc(db, 'salon', 'profile');
+    setDoc(docRef, profile, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', profile));
+}
+
 
 // Seed function if needed
 export const seedDatabase = async (db: Firestore) => {

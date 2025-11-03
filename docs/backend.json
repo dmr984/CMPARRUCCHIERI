@@ -63,6 +63,18 @@
         "price": { "type": "number" }
       },
       "required": ["name", "category", "stock", "reorderLevel", "supplier", "price"]
+    },
+    "salonProfile": {
+      "title": "Salon Profile",
+      "description": "Stores the salon's profile information.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string", "format": "email" }
+      },
+      "required": ["name", "address", "phone", "email"]
     }
   },
   "auth": {
@@ -88,6 +100,10 @@
     "/products/{productId}": {
       "schema": { "$ref": "#/entities/product" },
       "description": "Stores inventory product information."
+    },
+    "/salon/profile": {
+        "schema": { "$ref": "#/entities/salonProfile" },
+        "description": "Stores the salon's profile as a singleton document."
     }
   }
 }

@@ -49,3 +49,10 @@ export type Product = {
   supplier: string;
   price: number;
 };
+
+export type SalonProfile = {
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+};
