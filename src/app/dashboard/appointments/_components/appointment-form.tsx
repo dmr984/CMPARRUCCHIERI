@@ -227,11 +227,10 @@ export function AppointmentForm({
                                       onSelect={(currentValue) => {
                                         const currentServiceIds = field.value || [];
                                         const isSelected = currentServiceIds.includes(currentValue);
-                                        if (isSelected) {
-                                          field.onChange(currentServiceIds.filter(id => id !== currentValue));
-                                        } else {
-                                          field.onChange([...currentServiceIds, currentValue]);
-                                        }
+                                        const newServiceIds = isSelected
+                                          ? currentServiceIds.filter((id) => id !== currentValue)
+                                          : [...currentServiceIds, currentValue];
+                                        field.onChange(newServiceIds);
                                         setOpenCombobox(true); // Keep the popover open
                                       }}
                                     >
