@@ -42,7 +42,6 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
   const [generatedMessage, setGeneratedMessage] = useState('');
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [salonPhone] = useState('+39061234567'); // Static salon phone
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -152,7 +151,7 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
       <Card className="flex flex-col">
         <CardHeader>
             <CardTitle>Messaggio WhatsApp</CardTitle>
-            <CardDescription>Controlla il messaggio generato e invialo al tuo telefono per inoltrarlo.</CardDescription>
+            <CardDescription>Controlla il messaggio generato e invialo al cliente.</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow flex flex-col justify-between">
             {isLoading ? (
@@ -173,9 +172,9 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
          
           {generatedMessage && !isLoading && selectedAppointment && (
             <Button asChild className="mt-4 w-full" disabled={!generatedMessage}>
-              <a href={`https://wa.me/${salonPhone.replace(/\D/g, '')}?text=${encodeURIComponent(generatedMessage)}`} target="_blank" rel="noopener noreferrer">
+              <a href={`https://wa.me/${selectedAppointment.customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(generatedMessage)}`} target="_blank" rel="noopener noreferrer">
                 <Send className="mr-2 h-4 w-4" />
-                Invia a te stesso tramite WhatsApp
+                Invia al Cliente tramite WhatsApp
               </a>
             </Button>
           )}
