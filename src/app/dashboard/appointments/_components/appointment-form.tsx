@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -93,6 +93,8 @@ export function AppointmentForm({
       notes: '',
     },
   });
+  
+  const [openCombobox, setOpenCombobox] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -188,7 +190,7 @@ export function AppointmentForm({
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <FormLabel>Servizi</FormLabel>
-                        <Popover modal={false}>
+                        <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
                           <PopoverTrigger asChild>
                             <FormControl>
                               <Button
@@ -229,6 +231,7 @@ export function AppointmentForm({
                                           ? currentServiceIds.filter((id) => id !== currentValue)
                                           : [...currentServiceIds, currentValue];
                                         field.onChange(newServiceIds);
+                                        setOpenCombobox(true); // Keep the popover open
                                       }}
                                     >
                                       <Check
