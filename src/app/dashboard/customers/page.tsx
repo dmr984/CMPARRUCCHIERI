@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
@@ -20,24 +20,36 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { getCustomers } from '@/lib/data';
+import { getCustomers, saveCustomer, deleteCustomer } from '@/lib/data';
 import { MoreVertical, PlusCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import type { Customer } from '@/lib/types';
 import { CustomerForm } from './_components/customer-form';
+import { useToast } from '@/hooks/use-toast';
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
+  const { toast } = useToast();
+
+  const fetchData = useCallback(async () => {
+    try {
+        setCustomers(await getCustomers());
+    } catch (error) {
+        console.error("Failed to fetch customers:", error);
+        toast({
+            title: "Errore",
+            description: "Impossibile caricare i clienti. Assicurati che la configurazione di Firebase sia corretta.",
+            variant: "destructive"
+        })
+    }
+  }, [toast]);
 
   useEffect(() => {
-    async function fetchData() {
-      setCustomers(await getCustomers());
-    }
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleNewCustomer = () => {
     setEditingCustomer(undefined);
@@ -49,34 +61,45 @@ export default function CustomersPage() {
     setIsFormOpen(true);
   };
 
-  const handleDeleteCustomer = (customerId: string) => {
-    setCustomers(customers.filter(c => c.id !== customerId));
-    setIsFormOpen(false);
-    setEditingCustomer(undefined);
+  const handleDeleteCustomer = async (customerId: string) => {
+    try {
+        await deleteCustomer(customerId);
+        toast({
+            title: "Cliente Eliminato",
+            description: "Il cliente è stato eliminato con successo.",
+            variant: "destructive"
+        });
+        fetchData();
+        setIsFormOpen(false);
+        setEditingCustomer(undefined);
+    } catch (error) {
+        console.error("Failed to delete customer:", error);
+        toast({
+            title: "Errore",
+            description: "Impossibile eliminare il cliente.",
+            variant: "destructive"
+        })
+    }
   }
 
-  const handleFormSave = (customerData: Omit<Customer, 'id' | 'lastVisit' | 'avatarUrl'> & { id?: string }) => {
-    if (customerData.id) {
-      setCustomers(customers.map(c => 
-        c.id === customerData.id 
-          ? { ...c, ...customerData } as Customer
-          : c
-      ));
-    } else {
-      const newId = (Math.max(0, ...customers.map(c => parseInt(c.id, 10))) + 1).toString();
-      const newCustomer: Customer = {
-        id: newId,
-        name: customerData.name,
-        email: customerData.email,
-        phone: customerData.phone,
-        preferences: customerData.preferences,
-        lastVisit: new Date(),
-        avatarUrl: `https://picsum.photos/seed/${newId}/100/100`,
-      };
-      setCustomers([...customers, newCustomer]);
+  const handleFormSave = async (customerData: Omit<Customer, 'id' | 'lastVisit' | 'avatarUrl'> & { id?: string }) => {
+    try {
+        await saveCustomer(customerData);
+        toast({
+            title: "Cliente Salvato",
+            description: "Il cliente è stato salvato con successo."
+        });
+        fetchData();
+        setIsFormOpen(false);
+        setEditingCustomer(undefined);
+    } catch (error) {
+        console.error("Failed to save customer:", error);
+        toast({
+            title: "Errore",
+            description: "Impossibile salvare il cliente.",
+            variant: "destructive"
+        })
     }
-    setIsFormOpen(false);
-    setEditingCustomer(undefined);
   };
 
   const handleFormCancel = () => {
@@ -130,7 +153,7 @@ export default function CustomersPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {format(customer.lastVisit, 'PPP', { locale: it })}
+                    {format(new Date(customer.lastVisit), 'PPP', { locale: it })}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>

@@ -1,3 +1,5 @@
+'use client';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   CardContent,
@@ -30,13 +32,36 @@ import {
 import { format, isToday } from 'date-fns';
 import { PageHeader } from '@/components/page-header';
 import { DashboardCharts } from './_components/dashboard-charts';
+import type { Appointment, Customer, Product, Service } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
 
 
-export default async function DashboardPage() {
-  const appointments = await getAppointments();
-  const customers = await getCustomers();
-  const services = await getServices();
-  const products = await getProducts();
+export default function DashboardPage() {
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const { toast } = useToast();
+
+  const fetchData = useCallback(async () => {
+    try {
+        setAppointments(await getAppointments());
+        setCustomers(await getCustomers());
+        setServices(await getServices());
+        setProducts(await getProducts());
+    } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+        toast({
+            title: "Errore",
+            description: "Impossibile caricare i dati della dashboard. Assicurati che la configurazione di Firebase sia corretta.",
+            variant: "destructive"
+        })
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const todayAppointments = appointments.filter((app) => isToday(app.dateTime));
   const lowStockProducts = products.filter(

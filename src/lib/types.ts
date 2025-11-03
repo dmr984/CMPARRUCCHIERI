@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 export type Customer = {
   id: string;
   name: string;
@@ -33,6 +35,10 @@ export type Appointment = {
   status: AppointmentStatus;
   notes?: string;
 };
+
+export type FirebaseAppointment = Omit<Appointment, 'dateTime'> & {
+    dateTime: Timestamp;
+}
 
 export type Product = {
   id: string;

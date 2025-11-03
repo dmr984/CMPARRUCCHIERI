@@ -1,36 +1,81 @@
+'use client';
 import { getCustomerById, getAppointments, getServices, getStaff } from '@/lib/data';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { PageHeader } from '@/components/page-header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Mail, Phone, Edit, ArrowLeft } from 'lucide-react';
+import { Mail, Phone, Edit, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
-import type { Service } from '@/lib/types';
+import type { Service, Customer, Appointment, Staff } from '@/lib/types';
+import { useState, useEffect, useCallback } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
-export default async function CustomerDetailPage({ params }: { params: { id: string } }) {
-  const customer = await getCustomerById(params.id);
-  
-  if (!customer) {
-    notFound();
+export default function CustomerDetailPage() {
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const { toast } = useToast();
+
+  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [customerAppointments, setCustomerAppointments] = useState<(Appointment & { services: Service[], staff?: Staff })[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    if (!id) return;
+    setIsLoading(true);
+    try {
+      const customerData = await getCustomerById(id);
+      if (!customerData) {
+        notFound();
+        return;
+      }
+      setCustomer(customerData);
+
+      const allAppointments = await getAppointments();
+      const allServices = await getServices();
+      const allStaff = await getStaff();
+
+      const filteredAppointments = allAppointments
+        .filter(app => app.customerId === id)
+        .map(app => ({
+          ...app,
+          services: app.serviceIds.map(id => allServices.find(s => s.id === id)).filter((s): s is Service => !!s),
+          staff: allStaff.find(st => st.id === app.staffId)
+        }))
+        .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+      
+      setCustomerAppointments(filteredAppointments);
+    } catch (error) {
+      console.error("Failed to fetch customer details:", error);
+      toast({
+        title: "Errore",
+        description: "Impossibile caricare i dettagli del cliente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id, toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  if (isLoading) {
+    return (
+        <div className="flex items-center justify-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+    )
   }
 
-  const allAppointments = await getAppointments();
-  const allServices = await getServices();
-  const allStaff = await getStaff();
-
-  const customerAppointments = allAppointments
-    .filter(app => app.customerId === customer.id)
-    .map(app => ({
-      ...app,
-      services: app.serviceIds.map(id => allServices.find(s => s.id === id)).filter((s): s is Service => !!s),
-      staff: allStaff.find(st => st.id === app.staffId)
-    }))
-    .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime());
+  if (!customer) {
+    return notFound();
+  }
 
   return (
     <div>
@@ -42,9 +87,8 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
                     Torna ai Clienti
                 </Link>
             </Button>
-            {/* The edit button here would ideally open a form. 
-                For now it's just for show, as editing is handled on the main customers page. */}
-            <Button>
+            {/* The edit button could trigger a modal form here */}
+            <Button disabled>
                 <Edit className="mr-2 h-4 w-4" />
                 Modifica Cliente
             </Button>

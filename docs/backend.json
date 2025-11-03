@@ -1,0 +1,93 @@
+{
+  "entities": {
+    "customer": {
+      "title": "Customer",
+      "description": "Represents a customer of the salon.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "avatarUrl": { "type": "string", "format": "uri" },
+        "lastVisit": { "type": "string", "format": "date-time" },
+        "preferences": { "type": "string" }
+      },
+      "required": ["name", "email", "phone", "lastVisit"]
+    },
+    "staff": {
+      "title": "Staff",
+      "description": "Represents a staff member of the salon.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["Stilista", "Manager", "Receptionist"] }
+      },
+      "required": ["name", "role"]
+    },
+    "service": {
+      "title": "Service",
+      "description": "Represents a service offered by the salon.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "duration": { "type": "number" },
+        "price": { "type": "number" }
+      },
+      "required": ["name", "description", "duration", "price"]
+    },
+    "appointment": {
+      "title": "Appointment",
+      "description": "Represents an appointment.",
+      "type": "object",
+      "properties": {
+        "customerId": { "type": "string" },
+        "staffId": { "type": "string" },
+        "serviceIds": { "type": "array", "items": { "type": "string" } },
+        "dateTime": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["Programmato", "Completato", "Annullato"] },
+        "notes": { "type": "string" }
+      },
+      "required": ["customerId", "staffId", "serviceIds", "dateTime", "status"]
+    },
+    "product": {
+      "title": "Product",
+      "description": "Represents a product in the inventory.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "stock": { "type": "number" },
+        "reorderLevel": { "type": "number" },
+        "supplier": { "type": "string" },
+        "price": { "type": "number" }
+      },
+      "required": ["name", "category", "stock", "reorderLevel", "supplier", "price"]
+    }
+  },
+  "auth": {
+    "providers": []
+  },
+  "firestore": {
+    "/customers/{customerId}": {
+      "schema": { "$ref": "#/entities/customer" },
+      "description": "Stores customer profiles."
+    },
+    "/staff/{staffId}": {
+      "schema": { "$ref": "#/entities/staff" },
+      "description": "Stores staff member information."
+    },
+    "/services/{serviceId}": {
+      "schema": { "$ref": "#/entities/service" },
+      "description": "Stores available salon services."
+    },
+    "/appointments/{appointmentId}": {
+      "schema": { "$ref": "#/entities/appointment" },
+      "description": "Stores appointment details."
+    },
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/product" },
+      "description": "Stores inventory product information."
+    }
+  }
+}

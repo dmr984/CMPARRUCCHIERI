@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,22 +21,34 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { getServices } from '@/lib/data';
+import { getServices, saveService, deleteService } from '@/lib/data';
 import { MoreVertical, PlusCircle } from 'lucide-react';
 import type { Service } from '@/lib/types';
 import { ServiceForm } from './_components/service-form';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | undefined>(undefined);
+  const { toast } = useToast();
+
+  const fetchData = useCallback(async () => {
+    try {
+      setServices(await getServices());
+    } catch (error) {
+      console.error("Failed to fetch services:", error);
+      toast({
+        title: "Errore",
+        description: "Impossibile caricare i servizi. Assicurati che la configurazione di Firebase sia corretta.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
 
   useEffect(() => {
-    async function fetchData() {
-      setServices(await getServices());
-    }
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleNewService = () => {
     setEditingService(undefined);
@@ -48,29 +60,51 @@ export default function ServicesPage() {
     setIsFormOpen(true);
   }
 
-  const handleDeleteService = (serviceId: string) => {
-    setServices(services.filter(s => s.id !== serviceId));
-    setIsFormOpen(false);
-    setEditingService(undefined);
+  const handleDeleteService = async (serviceId: string) => {
+    try {
+      await deleteService(serviceId);
+      toast({
+        title: "Servizio Eliminato",
+        description: "Il servizio è stato eliminato con successo.",
+        variant: 'destructive',
+      });
+      fetchData();
+      setIsFormOpen(false);
+      setEditingService(undefined);
+    } catch (error) {
+      console.error("Failed to delete service", error);
+      toast({
+        title: "Errore",
+        description: "Impossibile eliminare il servizio.",
+        variant: 'destructive',
+      });
+    }
   }
 
-  const handleFormSave = (serviceData: Omit<Service, 'id'> & { id?: string }) => {
-    if (serviceData.id) {
-        setServices(services.map(s => s.id === serviceData.id ? { ...s, ...serviceData } as Service : s));
-    } else {
-        const newId = (Math.max(0, ...services.map(s => parseInt(s.id, 10))) + 1).toString();
-        const newService = { ...serviceData, id: newId } as Service;
-        setServices([...services, newService]);
+  const handleFormSave = async (serviceData: Omit<Service, 'id'> & { id?: string }) => {
+    try {
+      await saveService(serviceData);
+      toast({
+        title: "Servizio Salvato",
+        description: "Il servizio è stato salvato con successo."
+      });
+      fetchData();
+      setIsFormOpen(false);
+      setEditingService(undefined);
+    } catch (error) {
+      console.error("Failed to save service", error);
+      toast({
+        title: "Errore",
+        description: "Impossibile salvare il servizio.",
+        variant: 'destructive',
+      });
     }
-    setIsFormOpen(false);
-    setEditingService(undefined);
   }
   
   const handleFormCancel = () => {
     setIsFormOpen(false);
     setEditingService(undefined);
   }
-
 
   return (
     <div>

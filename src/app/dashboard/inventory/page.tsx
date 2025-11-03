@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,23 +19,35 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { getProducts } from '@/lib/data';
+import { getProducts, saveProduct, deleteProduct } from '@/lib/data';
 import { MoreVertical, PlusCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import type { Product } from '@/lib/types';
 import { ProductForm } from './_components/product-form';
+import { useToast } from '@/hooks/use-toast';
 
 export default function InventoryPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
+  const { toast } = useToast();
+
+  const fetchData = useCallback(async () => {
+    try {
+      setProducts(await getProducts());
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+      toast({
+        title: "Errore",
+        description: "Impossibile caricare i prodotti. Assicurati che la configurazione di Firebase sia corretta.",
+        variant: "destructive"
+      });
+    }
+  }, [toast]);
 
   useEffect(() => {
-    async function fetchData() {
-      setProducts(await getProducts());
-    }
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleNewProduct = () => {
     setEditingProduct(undefined);
@@ -47,29 +59,45 @@ export default function InventoryPage() {
     setIsFormOpen(true);
   };
 
-  const handleDeleteProduct = (productId: string) => {
-    setProducts(products.filter(p => p.id !== productId));
-    setIsFormOpen(false);
-    setEditingProduct(undefined);
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      await deleteProduct(productId);
+      toast({
+        title: "Prodotto Eliminato",
+        description: "Il prodotto è stato eliminato con successo.",
+        variant: "destructive",
+      });
+      fetchData();
+      setIsFormOpen(false);
+      setEditingProduct(undefined);
+    } catch (error) {
+      console.error("Failed to delete product:", error);
+      toast({
+        title: "Errore",
+        description: "Impossibile eliminare il prodotto.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleFormSave = (productData: Omit<Product, 'id'> & { id?: string }) => {
-    if (productData.id) {
-      setProducts(
-        products.map((p) =>
-          p.id === productData.id ? { ...p, ...productData } as Product : p
-        )
-      );
-    } else {
-      const newId = (Math.max(0, ...products.map(p => parseInt(p.id, 10))) + 1).toString();
-      const newProduct: Product = {
-        ...productData,
-        id: newId,
-      };
-      setProducts([...products, newProduct]);
+  const handleFormSave = async (productData: Omit<Product, 'id'> & { id?: string }) => {
+    try {
+      await saveProduct(productData);
+      toast({
+        title: "Prodotto Salvato",
+        description: "Il prodotto è stato salvato con successo.",
+      });
+      fetchData();
+      setIsFormOpen(false);
+      setEditingProduct(undefined);
+    } catch (error) {
+      console.error("Failed to save product:", error);
+      toast({
+        title: "Errore",
+        description: "Impossibile salvare il prodotto.",
+        variant: "destructive",
+      });
     }
-    setIsFormOpen(false);
-    setEditingProduct(undefined);
   };
 
   const handleFormCancel = () => {

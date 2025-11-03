@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PageHeader } from '@/components/page-header';
-import { getAppointments, getCustomers, getServices, getStaff } from '@/lib/data';
+import { getAppointments, getCustomers, getServices, getStaff, saveAppointment, deleteAppointment } from '@/lib/data';
 import { AppointmentsView } from './_components/appointments-view';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import type { Appointment, Customer, Service, Staff } from '@/lib/types';
 import { AppointmentForm } from './_components/appointment-form';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -17,21 +18,28 @@ export default function AppointmentsPage() {
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | undefined>(undefined);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    async function fetchData() {
+  const fetchData = useCallback(async () => {
+    try {
       setAppointments(await getAppointments());
       setCustomers(await getCustomers());
       setServices(await getServices());
       setStaff(await getStaff());
+    } catch (error) {
+        console.error("Failed to fetch data:", error);
+        toast({
+            title: "Errore",
+            description: "Impossibile caricare i dati. Assicurati che la configurazione di Firebase sia corretta.",
+            variant: "destructive"
+        })
     }
-    fetchData();
-  }, []);
-  
-  const refetchData = async () => {
-    setAppointments(await getAppointments());
-  }
+  }, [toast]);
 
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+  
   const handleNewAppointment = () => {
     setEditingAppointment(undefined);
     setIsFormOpen(true);
@@ -42,15 +50,24 @@ export default function AppointmentsPage() {
     setIsFormOpen(true);
   }
 
-  const handleFormSave = (appointmentData: Omit<Appointment, 'id'> & { id?: string }) => {
-    if (appointmentData.id) {
-      setAppointments(appointments.map(a => a.id === appointmentData.id ? { ...a, ...appointmentData } as Appointment : a));
-    } else {
-      const newId = (Math.max(0, ...appointments.map(a => parseInt(a.id, 10))) + 1).toString();
-      const newAppointment = { ...appointmentData, id: newId } as Appointment;
-      setAppointments([...appointments, newAppointment]);
+  const handleFormSave = async (appointmentData: Omit<Appointment, 'id' | 'dateTime'> & { id?: string, dateTime: Date }) => {
+    try {
+      await saveAppointment(appointmentData);
+      toast({
+        title: "Appuntamento Salvato",
+        description: "L'appuntamento è stato salvato con successo.",
+      });
+      fetchData(); // Refetch data to show the new/updated appointment
+      setIsFormOpen(false);
+      setEditingAppointment(undefined);
+    } catch (error) {
+      console.error("Failed to save appointment:", error);
+       toast({
+        title: "Errore",
+        description: "Impossibile salvare l'appuntamento.",
+        variant: "destructive"
+      })
     }
-    setIsFormOpen(false);
   }
 
   const handleFormCancel = () => {
@@ -58,12 +75,26 @@ export default function AppointmentsPage() {
     setEditingAppointment(undefined);
   }
 
-  const handleDeleteAppointment = (appointmentId: string) => {
-    setAppointments(appointments.filter(a => a.id !== appointmentId));
-    setIsFormOpen(false);
-    setEditingAppointment(undefined);
+  const handleDeleteAppointment = async (appointmentId: string) => {
+    try {
+        await deleteAppointment(appointmentId);
+        toast({
+            title: "Appuntamento Eliminato",
+            description: "L'appuntamento è stato eliminato.",
+            variant: "destructive"
+        });
+        fetchData(); // Refetch
+        setIsFormOpen(false);
+        setEditingAppointment(undefined);
+    } catch (error) {
+        console.error("Failed to delete appointment:", error);
+        toast({
+            title: "Errore",
+            description: "Impossibile eliminare l'appuntamento.",
+            variant: "destructive"
+        })
+    }
   }
-
 
   return (
     <div>
