@@ -1,9 +1,15 @@
-import { Scissors } from 'lucide-react';
+import Image from 'next/image';
 
 export function Logo() {
   return (
-    <div className="flex items-center justify-center size-10 bg-primary rounded-lg">
-      <Scissors className="h-5 w-5 text-primary-foreground" />
+    <div className="flex items-center justify-center size-10">
+      <Image 
+        src="/icon-192x192.png" 
+        alt="Logo CM Parrucchieri" 
+        width={40} 
+        height={40}
+        className="rounded-lg"
+        />
     </div>
   );
 }
