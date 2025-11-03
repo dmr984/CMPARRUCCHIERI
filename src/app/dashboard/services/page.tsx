@@ -63,47 +63,29 @@ export default function ServicesPage() {
     setIsFormOpen(true);
   }
 
-  const handleDeleteService = async (serviceId: string) => {
+  const handleDeleteService = (serviceId: string) => {
     if (!db) return;
-    try {
-      await deleteService(db, serviceId);
-      toast({
+    deleteService(db, serviceId);
+    toast({
         title: "Servizio Eliminato",
         description: "Il servizio è stato eliminato con successo.",
         variant: 'destructive',
-      });
-      fetchData();
-      setIsFormOpen(false);
-      setEditingService(undefined);
-    } catch (error) {
-      console.error("Failed to delete service", error);
-      toast({
-        title: "Errore",
-        description: "Impossibile eliminare il servizio.",
-        variant: 'destructive',
-      });
-    }
+    });
+    setTimeout(() => fetchData(), 1000);
+    setIsFormOpen(false);
+    setEditingService(undefined);
   }
 
-  const handleFormSave = async (serviceData: Omit<Service, 'id'> & { id?: string }) => {
+  const handleFormSave = (serviceData: Omit<Service, 'id'> & { id?: string }) => {
     if (!db) return;
-    try {
-      await saveService(db, serviceData);
-      toast({
-        title: "Servizio Salvato",
-        description: "Il servizio è stato salvato con successo."
-      });
-      fetchData();
-      setIsFormOpen(false);
-      setEditingService(undefined);
-    } catch (error) {
-      console.error("Failed to save service", error);
-      toast({
-        title: "Errore",
-        description: "Impossibile salvare il servizio.",
-        variant: 'destructive',
-      });
-    }
+    saveService(db, serviceData);
+    toast({
+        title: "Salvataggio in corso...",
+        description: "Il servizio è in fase di salvataggio."
+    });
+    setTimeout(() => fetchData(), 1000);
+    setIsFormOpen(false);
+    setEditingService(undefined);
   }
   
   const handleFormCancel = () => {

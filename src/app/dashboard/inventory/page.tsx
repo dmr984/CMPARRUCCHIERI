@@ -62,47 +62,29 @@ export default function InventoryPage() {
     setIsFormOpen(true);
   };
 
-  const handleDeleteProduct = async (productId: string) => {
+  const handleDeleteProduct = (productId: string) => {
     if (!db) return;
-    try {
-      await deleteProduct(db, productId);
-      toast({
+    deleteProduct(db, productId);
+    toast({
         title: "Prodotto Eliminato",
         description: "Il prodotto è stato eliminato con successo.",
         variant: "destructive",
-      });
-      fetchData();
-      setIsFormOpen(false);
-      setEditingProduct(undefined);
-    } catch (error) {
-      console.error("Failed to delete product:", error);
-      toast({
-        title: "Errore",
-        description: "Impossibile eliminare il prodotto.",
-        variant: "destructive",
-      });
-    }
+    });
+    setTimeout(() => fetchData(), 1000);
+    setIsFormOpen(false);
+    setEditingProduct(undefined);
   };
 
-  const handleFormSave = async (productData: Omit<Product, 'id'> & { id?: string }) => {
+  const handleFormSave = (productData: Omit<Product, 'id'> & { id?: string }) => {
     if (!db) return;
-    try {
-      await saveProduct(db, productData);
-      toast({
-        title: "Prodotto Salvato",
-        description: "Il prodotto è stato salvato con successo.",
-      });
-      fetchData();
-      setIsFormOpen(false);
-      setEditingProduct(undefined);
-    } catch (error) {
-      console.error("Failed to save product:", error);
-      toast({
-        title: "Errore",
-        description: "Impossibile salvare il prodotto.",
-        variant: "destructive",
-      });
-    }
+    saveProduct(db, productData);
+    toast({
+        title: "Salvataggio in corso...",
+        description: "Il prodotto è in fase di salvataggio.",
+    });
+    setTimeout(() => fetchData(), 1000);
+    setIsFormOpen(false);
+    setEditingProduct(undefined);
   };
 
   const handleFormCancel = () => {

@@ -17,9 +17,14 @@ export default function RemindersPage() {
   const fetchData = useCallback(async () => {
     if (!isConfigured || !db) return;
     try {
-        setCustomers(await getCustomers(db));
-        setAppointments(await getAppointments(db));
-        setServices(await getServices(db));
+        const [customers, appointments, services] = await Promise.all([
+          getCustomers(db),
+          getAppointments(db),
+          getServices(db)
+        ]);
+        setCustomers(customers);
+        setAppointments(appointments);
+        setServices(services);
     } catch(error) {
         console.error("Failed to fetch reminders data:", error);
         toast({

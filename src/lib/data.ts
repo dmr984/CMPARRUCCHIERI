@@ -4,48 +4,64 @@ import type { Customer, Staff, Service, Appointment, Product } from './types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
+const handleFirestoreError = (error: any, path: string, operation: 'get' | 'list' | 'create' | 'update' | 'delete', requestData?: any) => {
+  const permissionError = new FirestorePermissionError({
+    path,
+    operation,
+    requestResourceData: requestData,
+  });
+  errorEmitter.emit('permission-error', permissionError);
+  // Non rilanciare l'errore per non interrompere il flusso con un errore non gestito
+  // ma loggalo per visibilità se necessario (anche se l'emitter dovrebbe essere sufficiente)
+  console.error(`Caught permission error for ${operation} on ${path}`, error);
+};
+
+
 // CUSTOMERS
 export const getCustomers = async (db: Firestore): Promise<Customer[]> => {
-  const snapshot = await getDocs(collection(db, 'customers'));
-  return snapshot.docs.map(doc => {
-    const data = doc.data();
-    return { 
-        id: doc.id,
-        ...data,
-        lastVisit: (data.lastVisit as Timestamp).toDate(),
-     } as Customer
-  });
+  const collectionRef = collection(db, 'customers');
+  try {
+    const snapshot = await getDocs(collectionRef);
+    return snapshot.docs.map(doc => {
+      const data = doc.data();
+      return { 
+          id: doc.id,
+          ...data,
+          lastVisit: (data.lastVisit as Timestamp).toDate(),
+       } as Customer
+    });
+  } catch (error) {
+    handleFirestoreError(error, collectionRef.path, 'list');
+    return [];
+  }
 };
 
 export const getCustomerById = async (db: Firestore, id: string): Promise<Customer | undefined> => {
   const docRef = doc(db, 'customers', id);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    const data = docSnap.data();
-    return { 
-        id: docSnap.id, 
-        ...data,
-        lastVisit: (data.lastVisit as Timestamp).toDate(),
-    } as Customer;
+  try {
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      return { 
+          id: docSnap.id, 
+          ...data,
+          lastVisit: (data.lastVisit as Timestamp).toDate(),
+      } as Customer;
+    }
+  } catch(error) {
+    handleFirestoreError(error, docRef.path, 'get');
   }
+  return undefined;
 };
 
-export const saveCustomer = async (db: Firestore, customer: Omit<Customer, 'id'> & { id?: string }): Promise<string> => {
+export const saveCustomer = (db: Firestore, customer: Omit<Customer, 'id'> & { id?: string }): void => {
   if (customer.id) {
     const docRef = doc(db, 'customers', customer.id);
     const dataToSave = {
         ...customer,
         lastVisit: customer.lastVisit instanceof Date ? Timestamp.fromDate(customer.lastVisit) : customer.lastVisit
     };
-    setDoc(docRef, dataToSave, { merge: true }).catch(async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-            path: docRef.path,
-            operation: 'update',
-            requestResourceData: dataToSave,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    });
-    return customer.id;
+    setDoc(docRef, dataToSave, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', dataToSave));
   } else {
     const newCustomer = {
         ...customer,
@@ -53,95 +69,75 @@ export const saveCustomer = async (db: Firestore, customer: Omit<Customer, 'id'>
         avatarUrl: `https://picsum.photos/seed/${Math.random()}/100/100`,
     };
     const collectionRef = collection(db, 'customers');
-    const docRef = await addDoc(collectionRef, newCustomer).catch(async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-            path: collectionRef.path,
-            operation: 'create',
-            requestResourceData: newCustomer,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw serverError;
-    });
-    return docRef.id;
+    addDoc(collectionRef, newCustomer).catch((error) => handleFirestoreError(error, collectionRef.path, 'create', newCustomer));
   }
 };
 
-export const deleteCustomer = async (db: Firestore, customerId: string): Promise<void> => {
+export const deleteCustomer = (db: Firestore, customerId: string): void => {
     const docRef = doc(db, 'customers', customerId);
-    deleteDoc(docRef).catch(async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-            path: docRef.path,
-            operation: 'delete',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    });
+    deleteDoc(docRef).catch((error) => handleFirestoreError(error, docRef.path, 'delete'));
 }
 
 // STAFF
 export const getStaff = async (db: Firestore): Promise<Staff[]> => {
-    const snapshot = await getDocs(collection(db, 'staff'));
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Staff));
+    const collectionRef = collection(db, 'staff');
+    try {
+        const snapshot = await getDocs(collectionRef);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Staff));
+    } catch(error) {
+        handleFirestoreError(error, collectionRef.path, 'list');
+        return [];
+    }
 };
 
 // SERVICES
 export const getServices = async (db: Firestore): Promise<Service[]> => {
-    const snapshot = await getDocs(collection(db, 'services'));
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
+    const collectionRef = collection(db, 'services');
+    try {
+        const snapshot = await getDocs(collectionRef);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
+    } catch(error) {
+        handleFirestoreError(error, collectionRef.path, 'list');
+        return [];
+    }
 };
 
-export const saveService = async (db: Firestore, service: Omit<Service, 'id'> & { id?: string }): Promise<string> => {
+export const saveService = (db: Firestore, service: Omit<Service, 'id'> & { id?: string }): void => {
     if (service.id) {
         const docRef = doc(db, 'services', service.id);
-        setDoc(docRef, service, { merge: true }).catch(async (serverError) => {
-            const permissionError = new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'update',
-                requestResourceData: service,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        });
-        return service.id;
+        setDoc(docRef, service, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', service));
     } else {
         const collectionRef = collection(db, 'services');
-        const docRef = await addDoc(collectionRef, service).catch(async (serverError) => {
-            const permissionError = new FirestorePermissionError({
-                path: collectionRef.path,
-                operation: 'create',
-                requestResourceData: service,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            throw serverError;
-        });
-        return docRef.id;
+        addDoc(collectionRef, service).catch((error) => handleFirestoreError(error, collectionRef.path, 'create', service));
     }
 }
 
-export const deleteService = async (db: Firestore, serviceId: string): Promise<void> => {
+export const deleteService = (db: Firestore, serviceId: string): void => {
     const docRef = doc(db, 'services', serviceId);
-    deleteDoc(docRef).catch(async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-            path: docRef.path,
-            operation: 'delete',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    });
+    deleteDoc(docRef).catch((error) => handleFirestoreError(error, docRef.path, 'delete'));
 }
 
 
 // APPOINTMENTS
 export const getAppointments = async (db: Firestore): Promise<Appointment[]> => {
-    const snapshot = await getDocs(collection(db, 'appointments'));
-    return snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            ...data,
-            dateTime: (data.dateTime as Timestamp).toDate(),
-        } as Appointment
-    });
+    const collectionRef = collection(db, 'appointments');
+    try {
+        const snapshot = await getDocs(collectionRef);
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                dateTime: (data.dateTime as Timestamp).toDate(),
+            } as Appointment
+        });
+    } catch (error) {
+        handleFirestoreError(error, collectionRef.path, 'list');
+        return [];
+    }
 };
 
-export const saveAppointment = async (db: Firestore, appointment: Omit<Appointment, 'id' | 'dateTime'> & { id?: string, dateTime: Date }): Promise<string> => {
+export const saveAppointment = (db: Firestore, appointment: Omit<Appointment, 'id' | 'dateTime'> & { id?: string, dateTime: Date }): void => {
     const dataToSave = {
         ...appointment,
         dateTime: Timestamp.fromDate(appointment.dateTime),
@@ -149,86 +145,46 @@ export const saveAppointment = async (db: Firestore, appointment: Omit<Appointme
 
     if (appointment.id) {
         const docRef = doc(db, 'appointments', appointment.id);
-        setDoc(docRef, dataToSave, { merge: true }).catch(async (serverError) => {
-            const permissionError = new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'update',
-                requestResourceData: dataToSave,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        });
-        return appointment.id;
+        setDoc(docRef, dataToSave, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', dataToSave));
     } else {
         const { id, ...data } = dataToSave;
         const collectionRef = collection(db, 'appointments');
-        const docRef = await addDoc(collectionRef, data).catch(async (serverError) => {
-            const permissionError = new FirestorePermissionError({
-                path: collectionRef.path,
-                operation: 'create',
-                requestResourceData: data,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            throw serverError;
-        });
-        return docRef.id;
+        addDoc(collectionRef, data).catch((error) => handleFirestoreError(error, collectionRef.path, 'create', data));
     }
 }
 
-export const deleteAppointment = async (db: Firestore, appointmentId: string): Promise<void> => {
+export const deleteAppointment = (db: Firestore, appointmentId: string): void => {
     const docRef = doc(db, 'appointments', appointmentId);
-    deleteDoc(docRef).catch(async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-            path: docRef.path,
-            operation: 'delete',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    });
+    deleteDoc(docRef).catch((error) => handleFirestoreError(error, docRef.path, 'delete'));
 }
 
 
 // PRODUCTS
 export const getProducts = async (db: Firestore): Promise<Product[]> => {
-    const snapshot = await getDocs(collection(db, 'products'));
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+    const collectionRef = collection(db, 'products');
+    try {
+        const snapshot = await getDocs(collectionRef);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+    } catch (error) {
+        handleFirestoreError(error, collectionRef.path, 'list');
+        return [];
+    }
 };
 
-export const saveProduct = async (db: Firestore, product: Omit<Product, 'id'> & { id?: string }): Promise<string> => {
+export const saveProduct = (db: Firestore, product: Omit<Product, 'id'> & { id?: string }): void => {
     if (product.id) {
         const docRef = doc(db, 'products', product.id);
-        setDoc(docRef, product, { merge: true }).catch(async (serverError) => {
-            const permissionError = new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'update',
-                requestResourceData: product,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        });
-        return product.id;
+        setDoc(docRef, product, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', product));
     } else {
         const { id, ...data } = product;
         const collectionRef = collection(db, 'products');
-        const docRef = await addDoc(collectionRef, data).catch(async (serverError) => {
-            const permissionError = new FirestorePermissionError({
-                path: collectionRef.path,
-                operation: 'create',
-                requestResourceData: data,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            throw serverError;
-        });
-        return docRef.id;
+        addDoc(collectionRef, data).catch((error) => handleFirestoreError(error, collectionRef.path, 'create', data));
     }
 }
 
-export const deleteProduct = async (db: Firestore, productId: string): Promise<void> => {
+export const deleteProduct = (db: Firestore, productId: string): void => {
     const docRef = doc(db, 'products', productId);
-    deleteDoc(docRef).catch(async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-            path: docRef.path,
-            operation: 'delete',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    });
+    deleteDoc(docRef).catch((error) => handleFirestoreError(error, docRef.path, 'delete'));
 }
 
 // Seed function if needed

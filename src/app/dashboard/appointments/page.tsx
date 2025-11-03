@@ -25,10 +25,16 @@ export default function AppointmentsPage() {
   const fetchData = useCallback(async () => {
     if (!isConfigured || !db) return;
     try {
-      setAppointments(await getAppointments(db));
-      setCustomers(await getCustomers(db));
-      setServices(await getServices(db));
-      setStaff(await getStaff(db));
+      const [appointments, customers, services, staff] = await Promise.all([
+        getAppointments(db),
+        getCustomers(db),
+        getServices(db),
+        getStaff(db)
+      ]);
+      setAppointments(appointments);
+      setCustomers(customers);
+      setServices(services);
+      setStaff(staff);
     } catch (error) {
         console.error("Failed to fetch data:", error);
         toast({
@@ -53,25 +59,18 @@ export default function AppointmentsPage() {
     setIsFormOpen(true);
   }
 
-  const handleFormSave = async (appointmentData: Omit<Appointment, 'id' | 'dateTime'> & { id?: string, dateTime: Date }) => {
+  const handleFormSave = (appointmentData: Omit<Appointment, 'id' | 'dateTime'> & { id?: string, dateTime: Date }) => {
     if (!db) return;
-    try {
-      await saveAppointment(db, appointmentData);
-      toast({
-        title: "Appuntamento Salvato",
-        description: "L'appuntamento è stato salvato con successo.",
-      });
-      fetchData(); // Refetch data to show the new/updated appointment
-      setIsFormOpen(false);
-      setEditingAppointment(undefined);
-    } catch (error) {
-      console.error("Failed to save appointment:", error);
-       toast({
-        title: "Errore",
-        description: "Impossibile salvare l'appuntamento.",
-        variant: "destructive"
-      })
-    }
+    saveAppointment(db, appointmentData);
+    toast({
+      title: "Salvataggio in corso...",
+      description: "L'appuntamento è in fase di salvataggio.",
+    });
+    // Optimistic update can be implemented here if desired
+    // For now, just refetch
+    setTimeout(() => fetchData(), 1000); // Give firestore some time to update
+    setIsFormOpen(false);
+    setEditingAppointment(undefined);
   }
 
   const handleFormCancel = () => {
@@ -79,26 +78,18 @@ export default function AppointmentsPage() {
     setEditingAppointment(undefined);
   }
 
-  const handleDeleteAppointment = async (appointmentId: string) => {
+  const handleDeleteAppointment = (appointmentId: string) => {
     if (!db) return;
-    try {
-        await deleteAppointment(db, appointmentId);
-        toast({
-            title: "Appuntamento Eliminato",
-            description: "L'appuntamento è stato eliminato.",
-            variant: "destructive"
-        });
-        fetchData(); // Refetch
-        setIsFormOpen(false);
-        setEditingAppointment(undefined);
-    } catch (error) {
-        console.error("Failed to delete appointment:", error);
-        toast({
-            title: "Errore",
-            description: "Impossibile eliminare l'appuntamento.",
-            variant: "destructive"
-        })
-    }
+    deleteAppointment(db, appointmentId);
+    toast({
+        title: "Appuntamento Eliminato",
+        description: "L'appuntamento è stato eliminato.",
+        variant: "destructive"
+    });
+    // Optimistic update or refetch
+    setTimeout(() => fetchData(), 1000);
+    setIsFormOpen(false);
+    setEditingAppointment(undefined);
   }
 
   return (

@@ -64,47 +64,29 @@ export default function CustomersPage() {
     setIsFormOpen(true);
   };
 
-  const handleDeleteCustomer = async (customerId: string) => {
+  const handleDeleteCustomer = (customerId: string) => {
     if (!db) return;
-    try {
-        await deleteCustomer(db, customerId);
-        toast({
-            title: "Cliente Eliminato",
-            description: "Il cliente è stato eliminato con successo.",
-            variant: "destructive"
-        });
-        fetchData();
-        setIsFormOpen(false);
-        setEditingCustomer(undefined);
-    } catch (error) {
-        console.error("Failed to delete customer:", error);
-        toast({
-            title: "Errore",
-            description: "Impossibile eliminare il cliente.",
-            variant: "destructive"
-        })
-    }
+    deleteCustomer(db, customerId);
+    toast({
+        title: "Cliente Eliminato",
+        description: "Il cliente è stato eliminato con successo.",
+        variant: "destructive"
+    });
+    setTimeout(() => fetchData(), 1000);
+    setIsFormOpen(false);
+    setEditingCustomer(undefined);
   }
 
-  const handleFormSave = async (customerData: Omit<Customer, 'id' | 'lastVisit' | 'avatarUrl'> & { id?: string }) => {
+  const handleFormSave = (customerData: Omit<Customer, 'id' | 'lastVisit' | 'avatarUrl'> & { id?: string }) => {
     if (!db) return;
-    try {
-        await saveCustomer(db, customerData);
-        toast({
-            title: "Cliente Salvato",
-            description: "Il cliente è stato salvato con successo."
-        });
-        fetchData();
-        setIsFormOpen(false);
-        setEditingCustomer(undefined);
-    } catch (error) {
-        console.error("Failed to save customer:", error);
-        toast({
-            title: "Errore",
-            description: "Impossibile salvare il cliente.",
-            variant: "destructive"
-        })
-    }
+    saveCustomer(db, customerData);
+    toast({
+        title: "Salvataggio in corso...",
+        description: "I dati del cliente sono in fase di salvataggio."
+    });
+    setTimeout(() => fetchData(), 1000);
+    setIsFormOpen(false);
+    setEditingCustomer(undefined);
   };
 
   const handleFormCancel = () => {

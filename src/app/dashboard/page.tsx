@@ -48,10 +48,16 @@ export default function DashboardPage() {
   const fetchData = useCallback(async () => {
     if (!isConfigured || !db) return;
     try {
-        setAppointments(await getAppointments(db));
-        setCustomers(await getCustomers(db));
-        setServices(await getServices(db));
-        setProducts(await getProducts(db));
+        const [appointments, customers, services, products] = await Promise.all([
+            getAppointments(db),
+            getCustomers(db),
+            getServices(db),
+            getProducts(db)
+        ]);
+        setAppointments(appointments);
+        setCustomers(customers);
+        setServices(services);
+        setProducts(products);
     } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
         toast({

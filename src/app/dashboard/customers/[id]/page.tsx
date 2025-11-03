@@ -33,16 +33,18 @@ export default function CustomerDetailPage() {
     };
     setIsLoading(true);
     try {
-      const customerData = await getCustomerById(db, id);
+      const [customerData, allAppointments, allServices, allStaff] = await Promise.all([
+        getCustomerById(db, id),
+        getAppointments(db),
+        getServices(db),
+        getStaff(db)
+      ]);
+      
       if (!customerData) {
         notFound();
         return;
       }
       setCustomer(customerData);
-
-      const allAppointments = await getAppointments(db);
-      const allServices = await getServices(db);
-      const allStaff = await getStaff(db);
 
       const filteredAppointments = allAppointments
         .filter(app => app.customerId === id)
