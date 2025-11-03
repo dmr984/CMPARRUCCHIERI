@@ -39,7 +39,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import type { Appointment, Customer, Service, Staff, AppointmentStatus } from '@/lib/types';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Command,
   CommandEmpty,
@@ -151,15 +150,14 @@ export function AppointmentForm({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md md:max-w-xl">
+      <DialogContent className="max-w-md md:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-             <ScrollArea className="h-[60vh] md:h-auto pr-6">
-              <div className="space-y-4 py-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+              <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -370,9 +368,8 @@ export function AppointmentForm({
                   />
                 </div>
               </div>
-            </ScrollArea>
 
-            <DialogFooter className="justify-between">
+            <DialogFooter className="justify-between pt-4">
                 <div>
                 {appointment && (
                     <Button type="button" variant="destructive" onClick={handleDelete}>
