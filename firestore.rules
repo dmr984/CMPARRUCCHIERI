@@ -1,0 +1,12 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Abilita la lettura e la scrittura per tutti i percorsi durante lo sviluppo.
+    // ATTENZIONE: Queste regole sono permissive. Per la produzione, implementa
+    // regole di sicurezza più restrittive dopo aver configurato l'autenticazione.
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
