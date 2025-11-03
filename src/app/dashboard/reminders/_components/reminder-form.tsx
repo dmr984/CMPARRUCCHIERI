@@ -71,7 +71,7 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
         customerName: appointment.customer.name,
         appointmentDateTime: format(appointment.dateTime, 'PPP p', { locale: it }),
         serviceDetails: serviceDetails,
-        salonName: 'Salone Carmelinda',
+        salonName: 'CMparrucchieri',
         customerPreferences: appointment.customer.preferences,
         phoneNumber: appointment.customer.phone,
       });
