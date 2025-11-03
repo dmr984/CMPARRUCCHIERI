@@ -29,10 +29,16 @@ import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Il nome è obbligatorio.'),
-  email: z.string().email('Email non valida.'),
+  email: z.string().email('Email non valida.').optional().or(z.literal('')),
   phone: z.string().min(1, 'Il numero di telefono è obbligatorio.'),
   preferences: z.string().optional(),
 });
+
+export type ImportedContact = {
+  name: string;
+  email: string;
+  phone: string;
+}
 
 type CustomerFormValues = z.infer<typeof formSchema>;
 
@@ -42,6 +48,7 @@ interface CustomerFormProps {
   onSave: (customer: Omit<Customer, 'id' | 'lastVisit' | 'avatarUrl'> & { id?: string }) => void;
   onDelete: (customerId: string) => void;
   customer?: Customer;
+  importedContact?: ImportedContact | null;
 }
 
 export function CustomerForm({
@@ -50,6 +57,7 @@ export function CustomerForm({
   onSave,
   onDelete,
   customer,
+  importedContact
 }: CustomerFormProps) {
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(formSchema),
@@ -70,6 +78,13 @@ export function CustomerForm({
           phone: customer.phone,
           preferences: customer.preferences || '',
         });
+      } else if (importedContact) {
+         form.reset({
+          name: importedContact.name,
+          email: importedContact.email,
+          phone: importedContact.phone,
+          preferences: '',
+        });
       } else {
         form.reset({
           name: '',
@@ -79,7 +94,7 @@ export function CustomerForm({
         });
       }
     }
-  }, [customer, form, isOpen]);
+  }, [customer, importedContact, form, isOpen]);
 
   const onSubmit = (data: CustomerFormValues) => {
     onSave({

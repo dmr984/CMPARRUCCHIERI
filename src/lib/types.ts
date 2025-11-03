@@ -58,3 +58,10 @@ export type SalonProfile = {
   phone: string;
   email: string;
 };
+
+// Type for contact imported from device
+export type ImportedContact = {
+    name: string;
+    email: string;
+    phone: string;
+}

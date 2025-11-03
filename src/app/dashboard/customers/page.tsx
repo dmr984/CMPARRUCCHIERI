@@ -21,11 +21,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { getCustomers, saveCustomer, deleteCustomer } from '@/lib/data';
-import { MoreVertical, PlusCircle } from 'lucide-react';
+import { MoreVertical, PlusCircle, Import } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 import type { Customer } from '@/lib/types';
-import { CustomerForm } from './_components/customer-form';
+import { CustomerForm, type ImportedContact } from './_components/customer-form';
 import { useToast } from '@/hooks/use-toast';
 import { useFirebase } from '@/firebase/provider';
 
@@ -34,6 +34,7 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
+  const [importedContact, setImportedContact] = useState<ImportedContact | null>(null);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
@@ -56,12 +57,47 @@ export default function CustomersPage() {
 
   const handleNewCustomer = () => {
     setEditingCustomer(undefined);
+    setImportedContact(null);
     setIsFormOpen(true);
   };
 
   const handleEditCustomer = (customer: Customer) => {
     setEditingCustomer(customer);
+    setImportedContact(null);
     setIsFormOpen(true);
+  };
+  
+  const handleImportContact = async () => {
+    if (!('contacts' in navigator && 'select' in (navigator as any).contacts)) {
+        toast({
+            title: "Funzione non supportata",
+            description: "L'importazione dei contatti è disponibile solo su browser mobili supportati (es. Chrome su Android).",
+            variant: "destructive",
+        });
+        return;
+    }
+
+    try {
+        const contacts = await (navigator as any).contacts.select(['name', 'email', 'tel'], { multiple: false });
+        if (contacts.length > 0) {
+            const contact = contacts[0];
+            const imported: ImportedContact = {
+                name: contact.name?.[0] || '',
+                email: contact.email?.[0] || '',
+                phone: contact.tel?.[0] || '',
+            };
+            setImportedContact(imported);
+            setEditingCustomer(undefined);
+            setIsFormOpen(true);
+        }
+    } catch (ex) {
+        console.error("Errore durante l'importazione del contatto:", ex);
+        toast({
+            title: "Importazione annullata",
+            description: "Non è stato selezionato nessun contatto o si è verificato un errore.",
+            variant: "destructive"
+        });
+    }
   };
 
   const handleDeleteCustomer = (customerId: string) => {
@@ -87,11 +123,13 @@ export default function CustomersPage() {
     setTimeout(() => fetchData(), 1000);
     setIsFormOpen(false);
     setEditingCustomer(undefined);
+    setImportedContact(null);
   };
 
   const handleFormCancel = () => {
     setIsFormOpen(false);
     setEditingCustomer(undefined);
+    setImportedContact(null);
   };
 
   return (
@@ -100,10 +138,16 @@ export default function CustomersPage() {
         title="Clienti"
         description="Visualizza e gestisci la tua lista clienti."
       >
-        <Button onClick={handleNewCustomer} disabled={!isConfigured}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Aggiungi Cliente
-        </Button>
+        <div className='flex gap-2'>
+            <Button onClick={handleImportContact} variant="outline">
+                <Import className="mr-2 h-4 w-4" />
+                Importa Contatto
+            </Button>
+            <Button onClick={handleNewCustomer} disabled={!isConfigured}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Aggiungi Cliente
+            </Button>
+        </div>
       </PageHeader>
       <Card>
         <CardContent>
@@ -182,6 +226,7 @@ export default function CustomersPage() {
             onSave={handleFormSave}
             onDelete={handleDeleteCustomer}
             customer={editingCustomer}
+            importedContact={importedContact}
         />
       )}
     </div>
