@@ -222,14 +222,14 @@ export function AppointmentForm({
                                 <CommandGroup>
                                   {services.map((service) => (
                                     <CommandItem
-                                      value={service.id}
+                                      value={service.name}
                                       key={service.id}
-                                      onSelect={(currentValue) => {
+                                      onSelect={() => {
                                         const currentServiceIds = field.value || [];
-                                        const isSelected = currentServiceIds.includes(currentValue);
+                                        const isSelected = currentServiceIds.includes(service.id);
                                         const newServiceIds = isSelected
-                                          ? currentServiceIds.filter((id) => id !== currentValue)
-                                          : [...currentServiceIds, currentValue];
+                                          ? currentServiceIds.filter((id) => id !== service.id)
+                                          : [...currentServiceIds, service.id];
                                         field.onChange(newServiceIds);
                                         setOpenCombobox(true); // Keep the popover open
                                       }}
