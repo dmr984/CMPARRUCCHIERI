@@ -63,8 +63,9 @@ export const saveCustomer = (db: Firestore, customer: Omit<Customer, 'id'> & { i
     };
     setDoc(docRef, dataToSave, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', dataToSave));
   } else {
+    const { id, ...data } = customer; // Rimuove l'id esplicitamente
     const newCustomer = {
-        ...customer,
+        ...data,
         lastVisit: Timestamp.now(),
         avatarUrl: `https://picsum.photos/seed/${Math.random()}/100/100`,
     };
@@ -107,8 +108,9 @@ export const saveService = (db: Firestore, service: Omit<Service, 'id'> & { id?:
         const docRef = doc(db, 'services', service.id);
         setDoc(docRef, service, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', service));
     } else {
+        const { id, ...data } = service;
         const collectionRef = collection(db, 'services');
-        addDoc(collectionRef, service).catch((error) => handleFirestoreError(error, collectionRef.path, 'create', service));
+        addDoc(collectionRef, data).catch((error) => handleFirestoreError(error, collectionRef.path, 'create', data));
     }
 }
 
