@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -83,8 +83,6 @@ export function AppointmentForm({
   services,
   staff,
 }: AppointmentFormProps) {
-  const [isServicesPopoverOpen, setIsServicesPopoverOpen] = useState(false);
-
   const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -193,7 +191,7 @@ export function AppointmentForm({
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <FormLabel>Servizi</FormLabel>
-                        <Popover open={isServicesPopoverOpen} onOpenChange={setIsServicesPopoverOpen}>
+                        <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
                               <Button
