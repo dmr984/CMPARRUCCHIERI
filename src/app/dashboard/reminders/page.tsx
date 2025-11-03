@@ -5,18 +5,21 @@ import { PageHeader } from '@/components/page-header';
 import { useState, useEffect, useCallback } from 'react';
 import type { Customer, Appointment, Service } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { useFirebase } from '@/firebase/client-provider';
 
 export default function RemindersPage() {
+  const { db, isConfigured } = useFirebase();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
+    if (!isConfigured || !db) return;
     try {
-        setCustomers(await getCustomers());
-        setAppointments(await getAppointments());
-        setServices(await getServices());
+        setCustomers(await getCustomers(db));
+        setAppointments(await getAppointments(db));
+        setServices(await getServices(db));
     } catch(error) {
         console.error("Failed to fetch reminders data:", error);
         toast({
@@ -25,7 +28,7 @@ export default function RemindersPage() {
             variant: "destructive"
         })
     }
-  }, [toast]);
+  }, [toast, db, isConfigured]);
 
   useEffect(() => {
     fetchData();

@@ -27,16 +27,19 @@ import { it } from 'date-fns/locale';
 import type { Customer } from '@/lib/types';
 import { CustomerForm } from './_components/customer-form';
 import { useToast } from '@/hooks/use-toast';
+import { useFirebase } from '@/firebase/client-provider';
 
 export default function CustomersPage() {
+  const { db, isConfigured } = useFirebase();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
+    if (!isConfigured || !db) return;
     try {
-        setCustomers(await getCustomers());
+        setCustomers(await getCustomers(db));
     } catch (error) {
         console.error("Failed to fetch customers:", error);
         toast({
@@ -45,7 +48,7 @@ export default function CustomersPage() {
             variant: "destructive"
         })
     }
-  }, [toast]);
+  }, [toast, db, isConfigured]);
 
   useEffect(() => {
     fetchData();
@@ -62,8 +65,9 @@ export default function CustomersPage() {
   };
 
   const handleDeleteCustomer = async (customerId: string) => {
+    if (!db) return;
     try {
-        await deleteCustomer(customerId);
+        await deleteCustomer(db, customerId);
         toast({
             title: "Cliente Eliminato",
             description: "Il cliente è stato eliminato con successo.",
@@ -83,8 +87,9 @@ export default function CustomersPage() {
   }
 
   const handleFormSave = async (customerData: Omit<Customer, 'id' | 'lastVisit' | 'avatarUrl'> & { id?: string }) => {
+    if (!db) return;
     try {
-        await saveCustomer(customerData);
+        await saveCustomer(db, customerData);
         toast({
             title: "Cliente Salvato",
             description: "Il cliente è stato salvato con successo."
@@ -113,7 +118,7 @@ export default function CustomersPage() {
         title="Clienti"
         description="Visualizza e gestisci la tua lista clienti."
       >
-        <Button onClick={handleNewCustomer}>
+        <Button onClick={handleNewCustomer} disabled={!isConfigured}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Aggiungi Cliente
         </Button>
@@ -188,13 +193,15 @@ export default function CustomersPage() {
           </Table>
         </CardContent>
       </Card>
-      <CustomerForm
-        isOpen={isFormOpen}
-        onClose={handleFormCancel}
-        onSave={handleFormSave}
-        onDelete={handleDeleteCustomer}
-        customer={editingCustomer}
-      />
+      {isFormOpen && (
+        <CustomerForm
+            isOpen={isFormOpen}
+            onClose={handleFormCancel}
+            onSave={handleFormSave}
+            onDelete={handleDeleteCustomer}
+            customer={editingCustomer}
+        />
+      )}
     </div>
   );
 }

@@ -26,16 +26,19 @@ import { MoreVertical, PlusCircle } from 'lucide-react';
 import type { Service } from '@/lib/types';
 import { ServiceForm } from './_components/service-form';
 import { useToast } from '@/hooks/use-toast';
+import { useFirebase } from '@/firebase/client-provider';
 
 export default function ServicesPage() {
+  const { db, isConfigured } = useFirebase();
   const [services, setServices] = useState<Service[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | undefined>(undefined);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
+    if (!isConfigured || !db) return;
     try {
-      setServices(await getServices());
+      setServices(await getServices(db));
     } catch (error) {
       console.error("Failed to fetch services:", error);
       toast({
@@ -44,7 +47,7 @@ export default function ServicesPage() {
         variant: "destructive",
       });
     }
-  }, [toast]);
+  }, [toast, db, isConfigured]);
 
   useEffect(() => {
     fetchData();
@@ -61,8 +64,9 @@ export default function ServicesPage() {
   }
 
   const handleDeleteService = async (serviceId: string) => {
+    if (!db) return;
     try {
-      await deleteService(serviceId);
+      await deleteService(db, serviceId);
       toast({
         title: "Servizio Eliminato",
         description: "Il servizio è stato eliminato con successo.",
@@ -82,8 +86,9 @@ export default function ServicesPage() {
   }
 
   const handleFormSave = async (serviceData: Omit<Service, 'id'> & { id?: string }) => {
+    if (!db) return;
     try {
-      await saveService(serviceData);
+      await saveService(db, serviceData);
       toast({
         title: "Servizio Salvato",
         description: "Il servizio è stato salvato con successo."
@@ -109,7 +114,7 @@ export default function ServicesPage() {
   return (
     <div>
       <PageHeader title="Servizi" description="Gestisci il catalogo dei servizi del tuo salone.">
-        <Button onClick={handleNewService}>
+        <Button onClick={handleNewService} disabled={!isConfigured}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Aggiungi Servizio
         </Button>
@@ -160,13 +165,15 @@ export default function ServicesPage() {
           </Table>
         </CardContent>
       </Card>
-      <ServiceForm 
-        isOpen={isFormOpen}
-        onClose={handleFormCancel}
-        onSave={handleFormSave}
-        onDelete={handleDeleteService}
-        service={editingService}
-      />
+      {isFormOpen && (
+        <ServiceForm 
+            isOpen={isFormOpen}
+            onClose={handleFormCancel}
+            onSave={handleFormSave}
+            onDelete={handleDeleteService}
+            service={editingService}
+        />
+      )}
     </div>
   );
 }

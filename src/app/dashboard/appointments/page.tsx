@@ -9,8 +9,10 @@ import { PlusCircle } from 'lucide-react';
 import type { Appointment, Customer, Service, Staff } from '@/lib/types';
 import { AppointmentForm } from './_components/appointment-form';
 import { useToast } from '@/hooks/use-toast';
+import { useFirebase } from '@/firebase/client-provider';
 
 export default function AppointmentsPage() {
+  const { db, isConfigured } = useFirebase();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -21,11 +23,12 @@ export default function AppointmentsPage() {
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
+    if (!isConfigured || !db) return;
     try {
-      setAppointments(await getAppointments());
-      setCustomers(await getCustomers());
-      setServices(await getServices());
-      setStaff(await getStaff());
+      setAppointments(await getAppointments(db));
+      setCustomers(await getCustomers(db));
+      setServices(await getServices(db));
+      setStaff(await getStaff(db));
     } catch (error) {
         console.error("Failed to fetch data:", error);
         toast({
@@ -34,7 +37,7 @@ export default function AppointmentsPage() {
             variant: "destructive"
         })
     }
-  }, [toast]);
+  }, [toast, db, isConfigured]);
 
   useEffect(() => {
     fetchData();
@@ -51,8 +54,9 @@ export default function AppointmentsPage() {
   }
 
   const handleFormSave = async (appointmentData: Omit<Appointment, 'id' | 'dateTime'> & { id?: string, dateTime: Date }) => {
+    if (!db) return;
     try {
-      await saveAppointment(appointmentData);
+      await saveAppointment(db, appointmentData);
       toast({
         title: "Appuntamento Salvato",
         description: "L'appuntamento è stato salvato con successo.",
@@ -76,8 +80,9 @@ export default function AppointmentsPage() {
   }
 
   const handleDeleteAppointment = async (appointmentId: string) => {
+    if (!db) return;
     try {
-        await deleteAppointment(appointmentId);
+        await deleteAppointment(db, appointmentId);
         toast({
             title: "Appuntamento Eliminato",
             description: "L'appuntamento è stato eliminato.",
@@ -99,7 +104,7 @@ export default function AppointmentsPage() {
   return (
     <div>
       <PageHeader title="Appuntamenti" description="Gestisci il programma del tuo salone.">
-        <Button onClick={handleNewAppointment}>
+        <Button onClick={handleNewAppointment} disabled={!isConfigured}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Nuovo Appuntamento
         </Button>
@@ -112,16 +117,18 @@ export default function AppointmentsPage() {
         onEditAppointment={handleEditAppointment}
         onDeleteAppointment={handleDeleteAppointment}
       />
-      <AppointmentForm
-        isOpen={isFormOpen}
-        onClose={handleFormCancel}
-        onSave={handleFormSave}
-        onDelete={handleDeleteAppointment}
-        appointment={editingAppointment}
-        customers={customers}
-        services={services}
-        staff={staff}
-      />
+       {isFormOpen && (
+        <AppointmentForm
+            isOpen={isFormOpen}
+            onClose={handleFormCancel}
+            onSave={handleFormSave}
+            onDelete={handleDeleteAppointment}
+            appointment={editingAppointment}
+            customers={customers}
+            services={services}
+            staff={staff}
+        />
+       )}
     </div>
   );
 }

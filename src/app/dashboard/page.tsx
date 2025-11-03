@@ -34,9 +34,11 @@ import { PageHeader } from '@/components/page-header';
 import { DashboardCharts } from './_components/dashboard-charts';
 import type { Appointment, Customer, Product, Service } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { useFirebase } from '@/firebase/client-provider';
 
 
 export default function DashboardPage() {
+  const { db, isConfigured } = useFirebase();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -44,11 +46,12 @@ export default function DashboardPage() {
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
+    if (!isConfigured || !db) return;
     try {
-        setAppointments(await getAppointments());
-        setCustomers(await getCustomers());
-        setServices(await getServices());
-        setProducts(await getProducts());
+        setAppointments(await getAppointments(db));
+        setCustomers(await getCustomers(db));
+        setServices(await getServices(db));
+        setProducts(await getProducts(db));
     } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
         toast({
@@ -57,7 +60,7 @@ export default function DashboardPage() {
             variant: "destructive"
         })
     }
-  }, [toast]);
+  }, [toast, db, isConfigured]);
 
   useEffect(() => {
     fetchData();

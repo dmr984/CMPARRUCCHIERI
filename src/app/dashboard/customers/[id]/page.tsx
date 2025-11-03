@@ -14,8 +14,10 @@ import { it } from 'date-fns/locale';
 import type { Service, Customer, Appointment, Staff } from '@/lib/types';
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useFirebase } from '@/firebase/client-provider';
 
 export default function CustomerDetailPage() {
+  const { db, isConfigured } = useFirebase();
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const { toast } = useToast();
@@ -25,19 +27,22 @@ export default function CustomerDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
-    if (!id) return;
+    if (!id || !db || !isConfigured) {
+        if (isConfigured) setIsLoading(false);
+        return
+    };
     setIsLoading(true);
     try {
-      const customerData = await getCustomerById(id);
+      const customerData = await getCustomerById(db, id);
       if (!customerData) {
         notFound();
         return;
       }
       setCustomer(customerData);
 
-      const allAppointments = await getAppointments();
-      const allServices = await getServices();
-      const allStaff = await getStaff();
+      const allAppointments = await getAppointments(db);
+      const allServices = await getServices(db);
+      const allStaff = await getStaff(db);
 
       const filteredAppointments = allAppointments
         .filter(app => app.customerId === id)
@@ -59,7 +64,7 @@ export default function CustomerDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [id, toast]);
+  }, [id, toast, db, isConfigured]);
 
   useEffect(() => {
     fetchData();
@@ -74,7 +79,16 @@ export default function CustomerDetailPage() {
   }
 
   if (!customer) {
-    return notFound();
+    return (
+        <PageHeader title="Cliente non trovato">
+             <Button variant="outline" asChild>
+                <Link href="/dashboard/customers">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Torna ai Clienti
+                </Link>
+            </Button>
+        </PageHeader>
+    )
   }
 
   return (

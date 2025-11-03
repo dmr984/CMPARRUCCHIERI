@@ -25,16 +25,19 @@ import { Progress } from '@/components/ui/progress';
 import type { Product } from '@/lib/types';
 import { ProductForm } from './_components/product-form';
 import { useToast } from '@/hooks/use-toast';
+import { useFirebase } from '@/firebase/client-provider';
 
 export default function InventoryPage() {
+  const { db, isConfigured } = useFirebase();
   const [products, setProducts] = useState<Product[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
+    if (!isConfigured || !db) return;
     try {
-      setProducts(await getProducts());
+      setProducts(await getProducts(db));
     } catch (error) {
       console.error("Failed to fetch products:", error);
       toast({
@@ -43,7 +46,7 @@ export default function InventoryPage() {
         variant: "destructive"
       });
     }
-  }, [toast]);
+  }, [toast, db, isConfigured]);
 
   useEffect(() => {
     fetchData();
@@ -60,8 +63,9 @@ export default function InventoryPage() {
   };
 
   const handleDeleteProduct = async (productId: string) => {
+    if (!db) return;
     try {
-      await deleteProduct(productId);
+      await deleteProduct(db, productId);
       toast({
         title: "Prodotto Eliminato",
         description: "Il prodotto è stato eliminato con successo.",
@@ -81,8 +85,9 @@ export default function InventoryPage() {
   };
 
   const handleFormSave = async (productData: Omit<Product, 'id'> & { id?: string }) => {
+    if (!db) return;
     try {
-      await saveProduct(productData);
+      await saveProduct(db, productData);
       toast({
         title: "Prodotto Salvato",
         description: "Il prodotto è stato salvato con successo.",
@@ -108,7 +113,7 @@ export default function InventoryPage() {
   return (
     <div>
       <PageHeader title="Inventario" description="Traccia e gestisci lo stock dei prodotti.">
-        <Button onClick={handleNewProduct}>
+        <Button onClick={handleNewProduct} disabled={!isConfigured}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Aggiungi Prodotto
         </Button>
@@ -176,13 +181,15 @@ export default function InventoryPage() {
           </Table>
         </CardContent>
       </Card>
-      <ProductForm 
-        isOpen={isFormOpen}
-        onClose={handleFormCancel}
-        onSave={handleFormSave}
-        onDelete={handleDeleteProduct}
-        product={editingProduct}
-      />
+      {isFormOpen && (
+        <ProductForm 
+            isOpen={isFormOpen}
+            onClose={handleFormCancel}
+            onSave={handleFormSave}
+            onDelete={handleDeleteProduct}
+            product={editingProduct}
+        />
+      )}
     </div>
   );
 }
