@@ -5,19 +5,13 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 const handleFirestoreError = (error: any, path: string, operation: 'get' | 'list' | 'create' | 'update' | 'delete', requestData?: any) => {
-  // We only want to handle permission errors, re-throw others
-  if (error.code === 'permission-denied') {
     const permissionError = new FirestorePermissionError({
       path,
       operation,
       requestResourceData: requestData,
     });
     errorEmitter.emit('permission-error', permissionError);
-    // Non rilanciare l'errore per non interrompere il flusso con un errore non gestito
     console.error(`Caught permission error for ${operation} on ${path}`, error);
-  } else {
-    throw error;
-  }
 };
 
 
@@ -68,8 +62,9 @@ export const saveCustomer = (db: Firestore, customer: Omit<Customer, 'id' | 'las
     };
     setDoc(docRef, finalData, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', finalData));
   } else {
+    const { id, ...data } = customer;
     const newCustomer = {
-        ...customer,
+        ...data,
         lastVisit: Timestamp.now(),
         avatarUrl: `https://picsum.photos/seed/${Math.random()}/100/100`,
     };
@@ -96,6 +91,23 @@ export const getStaff = async (db: Firestore): Promise<Staff[]> => {
     }
 };
 
+export const saveStaff = (db: Firestore, staffMember: Omit<Staff, 'id'> & { id?: string }): void => {
+    if (staffMember.id) {
+        const docRef = doc(db, 'staff', staffMember.id);
+        const { id, ...data } = staffMember;
+        setDoc(docRef, data, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', data));
+    } else {
+        const { id, ...data } = staffMember;
+        const collectionRef = collection(db, 'staff');
+        addDoc(collectionRef, data).catch((error) => handleFirestoreError(error, collectionRef.path, 'create', data));
+    }
+};
+
+export const deleteStaff = (db: Firestore, staffId: string): void => {
+    const docRef = doc(db, 'staff', staffId);
+    deleteDoc(docRef).catch((error) => handleFirestoreError(error, docRef.path, 'delete'));
+};
+
 // SERVICES
 export const getServices = async (db: Firestore): Promise<Service[]> => {
     const collectionRef = collection(db, 'services');
@@ -111,7 +123,8 @@ export const getServices = async (db: Firestore): Promise<Service[]> => {
 export const saveService = (db: Firestore, service: Omit<Service, 'id'> & { id?: string }): void => {
     if (service.id) {
         const docRef = doc(db, 'services', service.id);
-        setDoc(docRef, service, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', service));
+        const { id, ...data } = service;
+        setDoc(docRef, data, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', data));
     } else {
         const { id, ...data } = service;
         const collectionRef = collection(db, 'services');
@@ -152,7 +165,8 @@ export const saveAppointment = (db: Firestore, appointment: Omit<Appointment, 'i
 
     if (appointment.id) {
         const docRef = doc(db, 'appointments', appointment.id);
-        setDoc(docRef, dataToSave, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', dataToSave));
+        const { id, ...data } = dataToSave;
+        setDoc(docRef, data, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', data));
     } else {
         const { id, ...data } = dataToSave;
         const collectionRef = collection(db, 'appointments');
@@ -181,7 +195,8 @@ export const getProducts = async (db: Firestore): Promise<Product[]> => {
 export const saveProduct = (db: Firestore, product: Omit<Product, 'id'> & { id?: string }): void => {
     if (product.id) {
         const docRef = doc(db, 'products', product.id);
-        setDoc(docRef, product, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', product));
+        const { id, ...data } = product;
+        setDoc(docRef, data, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', data));
     } else {
         const { id, ...data } = product;
         const collectionRef = collection(db, 'products');

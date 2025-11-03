@@ -8,17 +8,34 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, PlusCircle, MoreVertical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirebase } from '@/firebase/provider';
-import { getSalonProfile, saveSalonProfile } from '@/lib/data';
-import type { SalonProfile } from '@/lib/types';
+import { getSalonProfile, saveSalonProfile, getStaff, saveStaff, deleteStaff } from '@/lib/data';
+import type { SalonProfile, Staff } from '@/lib/types';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { StaffForm } from './_components/staff-form';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+
 
 export default function SettingsPage() {
   const { db, isConfigured } = useFirebase();
   const { toast } = useToast();
 
-  // State for Profile settings
   const [salonProfile, setSalonProfile] = useState<SalonProfile>({
     name: 'Salone Carmelinda',
     address: 'Via Roma, 1, 00184 Roma RM, Italia',
@@ -26,26 +43,32 @@ export default function SettingsPage() {
     email: 'contatti@carmelindasalon.it',
   });
   
+  const [staff, setStaff] = useState<Staff[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isStaffFormOpen, setIsStaffFormOpen] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<Staff | undefined>(undefined);
 
-  // State for Notification settings
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [stockAlerts, setStockAlerts] = useState(true);
 
-  const fetchProfile = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     if (!isConfigured || !db) return;
     setIsLoading(true);
     try {
-      const profile = await getSalonProfile(db);
+      const [profile, staffData] = await Promise.all([
+        getSalonProfile(db),
+        getStaff(db)
+      ]);
       if (profile) {
         setSalonProfile(profile);
       }
+      setStaff(staffData);
     } catch (error) {
-      console.error("Failed to fetch salon profile:", error);
+      console.error("Failed to fetch settings data:", error);
       toast({
         title: "Errore",
-        description: "Impossibile caricare il profilo del salone.",
+        description: "Impossibile caricare i dati delle impostazioni.",
         variant: "destructive"
       });
     } finally {
@@ -54,8 +77,8 @@ export default function SettingsPage() {
   }, [db, isConfigured, toast]);
 
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    fetchData();
+  }, [fetchData]);
   
   const handleProfileSave = () => {
     if (!db) return;
@@ -69,7 +92,6 @@ export default function SettingsPage() {
   };
 
   const handleNotificationsSave = () => {
-    // In a real app, you would save these preferences to your backend.
      console.log('Salvataggio preferenze notifiche:', { emailNotifications, stockAlerts });
     toast({
       title: 'Preferenze salvate!',
@@ -80,7 +102,40 @@ export default function SettingsPage() {
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setSalonProfile(prev => ({ ...prev, [id]: value }));
-  }
+  };
+
+  const handleNewStaff = () => {
+    setEditingStaff(undefined);
+    setIsStaffFormOpen(true);
+  };
+
+  const handleEditStaff = (staffMember: Staff) => {
+    setEditingStaff(staffMember);
+    setIsStaffFormOpen(true);
+  };
+
+  const handleDeleteStaff = (staffId: string) => {
+    if (!db) return;
+    deleteStaff(db, staffId);
+    toast({
+        title: "Membro dello staff eliminato",
+        description: "Il membro dello staff è stato eliminato con successo.",
+        variant: "destructive",
+    });
+    setTimeout(() => fetchData(), 500);
+    setIsStaffFormOpen(false);
+  };
+
+  const handleStaffFormSave = (staffMember: Omit<Staff, 'id'> & { id?: string }) => {
+    if (!db) return;
+    saveStaff(db, staffMember);
+    toast({
+        title: "Salvataggio in corso...",
+        description: "I dati dello staff sono in fase di salvataggio.",
+    });
+    setTimeout(() => fetchData(), 500);
+    setIsStaffFormOpen(false);
+  };
 
   return (
     <div className="space-y-8">
@@ -89,7 +144,7 @@ export default function SettingsPage() {
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="profile">Profilo</TabsTrigger>
-          <TabsTrigger value="users">Utenti</TabsTrigger>
+          <TabsTrigger value="staff">Stilisti</TabsTrigger>
           <TabsTrigger value="notifications">Notifiche</TabsTrigger>
         </TabsList>
 
@@ -134,14 +189,64 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="users">
+        <TabsContent value="staff">
             <Card>
-                <CardHeader>
-                    <CardTitle>Gestione Utenti</CardTitle>
-                    <CardDescription>Gestisci chi ha accesso alla dashboard del tuo salone.</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>Gestione Stilisti</CardTitle>
+                        <CardDescription>Aggiungi, modifica o rimuovi membri dello staff.</CardDescription>
+                    </div>
+                    <Button onClick={handleNewStaff} disabled={!isConfigured}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Aggiungi Stilista
+                    </Button>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground">La funzionalità di gestione degli utenti sarà presto disponibile.</p>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Nome</TableHead>
+                                <TableHead>Ruolo</TableHead>
+                                <TableHead className="text-right">Azioni</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {staff.map((staffMember) => (
+                                <TableRow key={staffMember.id}>
+                                    <TableCell>
+                                        <div className="flex items-center gap-3">
+                                            <Avatar className="h-9 w-9">
+                                                <AvatarFallback>{staffMember.name.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                            <span className="font-medium">{staffMember.name}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant={staffMember.role === 'Manager' ? 'default' : 'secondary'}>
+                                            {staffMember.role}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon">
+                                                    <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <DropdownMenuItem onClick={() => handleEditStaff(staffMember)}>
+                                                    Modifica
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleDeleteStaff(staffMember.id)} className="text-destructive">
+                                                    Elimina
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
                 </CardContent>
             </Card>
         </TabsContent>
@@ -175,6 +280,15 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      {isStaffFormOpen && (
+        <StaffForm
+            isOpen={isStaffFormOpen}
+            onClose={() => setIsStaffFormOpen(false)}
+            onSave={handleStaffFormSave}
+            onDelete={handleDeleteStaff}
+            staffMember={editingStaff}
+        />
+      )}
     </div>
   );
 }

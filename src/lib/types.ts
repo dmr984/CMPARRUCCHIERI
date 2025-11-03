@@ -10,10 +10,12 @@ export type Customer = {
   preferences?: string;
 };
 
+export type StaffRole = 'Stilista' | 'Manager' | 'Receptionist';
+
 export type Staff = {
   id: string;
   name: string;
-  role: 'Stilista' | 'Manager' | 'Receptionist';
+  role: StaffRole;
 };
 
 export type Service = {
