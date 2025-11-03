@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -227,10 +227,11 @@ export function AppointmentForm({
                                       onSelect={(currentValue) => {
                                         const currentServiceIds = field.value || [];
                                         const isSelected = currentServiceIds.includes(currentValue);
-                                        const newServiceIds = isSelected
-                                          ? currentServiceIds.filter((id) => id !== currentValue)
-                                          : [...currentServiceIds, currentValue];
-                                        field.onChange(newServiceIds);
+                                        if (isSelected) {
+                                          field.onChange(currentServiceIds.filter(id => id !== currentValue));
+                                        } else {
+                                          field.onChange([...currentServiceIds, currentValue]);
+                                        }
                                         setOpenCombobox(true); // Keep the popover open
                                       }}
                                     >
