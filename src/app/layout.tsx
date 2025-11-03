@@ -2,9 +2,21 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
+const APP_NAME = "Carmelinda - Manager del Salone";
+const APP_DESCRIPTION = "Gestisci il tuo salone con facilità.";
+
 export const metadata: Metadata = {
-  title: 'Carmelinda - Manager del Salone',
-  description: 'Gestisci il tuo salone con facilità.',
+  title: APP_NAME,
+  description: APP_DESCRIPTION,
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: APP_NAME,
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({
