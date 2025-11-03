@@ -96,29 +96,28 @@ export function AppointmentForm({
 
   useEffect(() => {
     if (isOpen) {
-      if (appointment) {
-        form.reset({
-          customerId: appointment.customerId,
-          serviceIds: appointment.serviceIds,
-          staffId: appointment.staffId,
-          date: appointment.dateTime,
-          time: format(appointment.dateTime, 'HH:mm'),
-          status: appointment.status,
-          notes: appointment.notes || '',
-        });
-      } else {
-        form.reset({
-          customerId: '',
-          serviceIds: [],
-          staffId: '',
-          date: new Date(),
-          time: '',
-          status: 'Programmato',
-          notes: '',
-        });
-      }
+      const initialValues = appointment
+        ? {
+            customerId: appointment.customerId,
+            serviceIds: appointment.serviceIds,
+            staffId: appointment.staffId,
+            date: appointment.dateTime,
+            time: format(appointment.dateTime, 'HH:mm'),
+            status: appointment.status,
+            notes: appointment.notes || '',
+          }
+        : {
+            customerId: '',
+            serviceIds: [],
+            staffId: '',
+            date: new Date(),
+            time: '',
+            status: 'Programmato' as AppointmentStatus,
+            notes: '',
+          };
+      form.reset(initialValues);
     }
-  }, [appointment, form, isOpen]);
+  }, [isOpen, appointment, form]);
 
   const onSubmit = (data: AppointmentFormValues) => {
     const [hours, minutes] = data.time.split(':').map(Number);
