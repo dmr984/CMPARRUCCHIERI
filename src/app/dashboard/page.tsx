@@ -34,7 +34,7 @@ import { PageHeader } from '@/components/page-header';
 import { DashboardCharts } from './_components/dashboard-charts';
 import type { Appointment, Customer, Product, Service } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { useFirebase } from '@/firebase/client-provider';
+import { useFirebase } from '@/firebase/provider';
 
 
 export default function DashboardPage() {

@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/page-header';
 import { useState, useEffect, useCallback } from 'react';
 import type { Customer, Appointment, Service } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { useFirebase } from '@/firebase/client-provider';
+import { useFirebase } from '@/firebase/provider';
 
 export default function RemindersPage() {
   const { db, isConfigured } = useFirebase();

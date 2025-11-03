@@ -25,7 +25,7 @@ import { Progress } from '@/components/ui/progress';
 import type { Product } from '@/lib/types';
 import { ProductForm } from './_components/product-form';
 import { useToast } from '@/hooks/use-toast';
-import { useFirebase } from '@/firebase/client-provider';
+import { useFirebase } from '@/firebase/provider';
 
 export default function InventoryPage() {
   const { db, isConfigured } = useFirebase();

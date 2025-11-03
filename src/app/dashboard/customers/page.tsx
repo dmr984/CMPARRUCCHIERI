@@ -27,7 +27,7 @@ import { it } from 'date-fns/locale';
 import type { Customer } from '@/lib/types';
 import { CustomerForm } from './_components/customer-form';
 import { useToast } from '@/hooks/use-toast';
-import { useFirebase } from '@/firebase/client-provider';
+import { useFirebase } from '@/firebase/provider';
 
 export default function CustomersPage() {
   const { db, isConfigured } = useFirebase();

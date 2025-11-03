@@ -26,7 +26,7 @@ import { MoreVertical, PlusCircle } from 'lucide-react';
 import type { Service } from '@/lib/types';
 import { ServiceForm } from './_components/service-form';
 import { useToast } from '@/hooks/use-toast';
-import { useFirebase } from '@/firebase/client-provider';
+import { useFirebase } from '@/firebase/provider';
 
 export default function ServicesPage() {
   const { db, isConfigured } = useFirebase();

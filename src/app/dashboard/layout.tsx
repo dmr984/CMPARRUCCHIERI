@@ -35,7 +35,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FirebaseProvider } from '@/firebase/client-provider';
+import { FirebaseProvider } from '@/firebase/provider';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -47,11 +47,7 @@ const navItems = [
   { href: '/dashboard/settings', label: 'Impostazioni', icon: Settings },
 ];
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
@@ -73,7 +69,10 @@ export default function DashboardLayout({
                   <Link href={item.href}>
                     <SidebarMenuButton
                       as="a"
-                      isActive={pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard')}
+                      isActive={
+                        pathname.startsWith(item.href) &&
+                        (item.href !== '/dashboard' || pathname === '/dashboard')
+                      }
                       tooltip={item.label}
                     >
                       <item.icon />
@@ -91,7 +90,11 @@ export default function DashboardLayout({
                   <div className="flex justify-between items-center w-full">
                     <div className="flex gap-2 items-center">
                       <Avatar className="w-8 h-8">
-                        <AvatarImage data-ai-hint="woman smiling" src="https://picsum.photos/seed/user/100/100" alt="User" />
+                        <AvatarImage
+                          data-ai-hint="woman smiling"
+                          src="https://picsum.photos/seed/user/100/100"
+                          alt="User"
+                        />
                         <AvatarFallback>CS</AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col items-start text-sm group-data-[collapsible=icon]:hidden">
@@ -117,15 +120,21 @@ export default function DashboardLayout({
           <header className="flex items-center justify-between p-4 bg-background/80 backdrop-blur-sm sticky top-0 z-10 border-b md:p-3 md:justify-end">
             <SidebarTrigger className="md:hidden" />
             <div className="items-center gap-4 hidden md:flex">
-               <span className="font-semibold text-sm">Carmelinda - Manager del Salone</span>
+              <span className="font-semibold text-sm">
+                Carmelinda - Manager del Salone
+              </span>
             </div>
           </header>
-          <main className="p-4 md:p-6 lg:p-8">
-            <FirebaseProvider>
-              {children}
-            </FirebaseProvider>
-          </main>
+          <main className="p-4 md:p-6 lg:p-8">{children}</main>
         </SidebarInset>
       </SidebarProvider>
   );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <FirebaseProvider>
+            <DashboardLayoutContent>{children}</DashboardLayoutContent>
+        </FirebaseProvider>
+    )
 }

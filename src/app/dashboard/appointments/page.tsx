@@ -9,7 +9,7 @@ import { PlusCircle } from 'lucide-react';
 import type { Appointment, Customer, Service, Staff } from '@/lib/types';
 import { AppointmentForm } from './_components/appointment-form';
 import { useToast } from '@/hooks/use-toast';
-import { useFirebase } from '@/firebase/client-provider';
+import { useFirebase } from '@/firebase/provider';
 
 export default function AppointmentsPage() {
   const { db, isConfigured } = useFirebase();

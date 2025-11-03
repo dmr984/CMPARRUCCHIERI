@@ -14,7 +14,7 @@ import { it } from 'date-fns/locale';
 import type { Service, Customer, Appointment, Staff } from '@/lib/types';
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useFirebase } from '@/firebase/client-provider';
+import { useFirebase } from '@/firebase/provider';
 
 export default function CustomerDetailPage() {
   const { db, isConfigured } = useFirebase();
