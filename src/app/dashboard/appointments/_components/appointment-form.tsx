@@ -225,14 +225,10 @@ export function AppointmentForm({
                                       onSelect={(currentValue) => {
                                         const currentServiceIds = field.value || [];
                                         const isSelected = currentServiceIds.includes(currentValue);
-                                        if (isSelected) {
-                                          form.setValue(
-                                            "serviceIds",
-                                            currentServiceIds.filter((id) => id !== currentValue)
-                                          );
-                                        } else {
-                                          form.setValue("serviceIds", [...currentServiceIds, currentValue]);
-                                        }
+                                        const newServiceIds = isSelected
+                                          ? currentServiceIds.filter((id) => id !== currentValue)
+                                          : [...currentServiceIds, currentValue];
+                                        field.onChange(newServiceIds);
                                       }}
                                     >
                                       <Check
