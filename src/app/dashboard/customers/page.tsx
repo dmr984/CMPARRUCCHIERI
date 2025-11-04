@@ -153,25 +153,25 @@ export default function CustomersPage() {
         title="Clienti"
         description="Visualizza e gestisci la tua lista clienti."
       >
-        <div className='flex gap-2'>
-            <Button onClick={handleImportContact} variant="outline">
+        <div className='flex flex-col sm:flex-row gap-2'>
+            <Button onClick={handleImportContact} variant="outline" size="sm">
                 <Import className="mr-2 h-4 w-4" />
-                Importa Contatto
+                Importa
             </Button>
-            <Button onClick={handleNewCustomer} disabled={!isConfigured}>
+            <Button onClick={handleNewCustomer} disabled={!isConfigured} size="sm">
               <PlusCircle className="mr-2 h-4 w-4" />
-              Aggiungi Cliente
+              Aggiungi
             </Button>
         </div>
       </PageHeader>
       <Card>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
-                <TableHead>Contatto</TableHead>
-                <TableHead>Ultima Visita</TableHead>
+                <TableHead className="hidden md:table-cell">Contatto</TableHead>
+                <TableHead className="hidden sm:table-cell">Ultima Visita</TableHead>
                 <TableHead className="text-right">Azioni</TableHead>
               </TableRow>
             </TableHeader>
@@ -189,16 +189,16 @@ export default function CustomersPage() {
                           {customer.name.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="font-medium">{customer.name}</div>
+                      <div className="font-medium whitespace-nowrap">{customer.name}</div>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <div>{customer.email}</div>
                     <div className="text-muted-foreground text-sm">
                       {customer.phone}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     {format(new Date(customer.lastVisit), 'PPP', { locale: it })}
                   </TableCell>
                   <TableCell className="text-right">

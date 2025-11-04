@@ -101,13 +101,13 @@ export default function InventoryPage() {
         </Button>
       </PageHeader>
       <Card>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[40%]">Prodotto</TableHead>
                 <TableHead>Livello Stock</TableHead>
-                <TableHead>Stato</TableHead>
+                <TableHead className="hidden sm:table-cell">Stato</TableHead>
                 <TableHead>Prezzo</TableHead>
                 <TableHead className="text-right">Azioni</TableHead>
               </TableRow>
@@ -126,11 +126,11 @@ export default function InventoryPage() {
                     </TableCell>
                     <TableCell>
                       <div className='flex items-center gap-2'>
-                        <Progress value={stockPercentage} className="w-24 h-2" />
+                        <Progress value={stockPercentage} className="w-20 h-2 hidden md:block" />
                         <span>{product.stock} unità</span>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       <Badge variant={isLowStock ? 'destructive' : 'secondary'}>
                         {isLowStock ? 'Stock Basso' : 'In Stock'}
                       </Badge>

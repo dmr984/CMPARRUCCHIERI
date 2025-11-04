@@ -191,7 +191,7 @@ export default function SettingsPage() {
 
         <TabsContent value="staff">
             <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
+                <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <CardTitle>Gestione Stilisti</CardTitle>
                         <CardDescription>Aggiungi, modifica o rimuovi membri dello staff.</CardDescription>
@@ -201,7 +201,7 @@ export default function SettingsPage() {
                         Aggiungi Stilista
                     </Button>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="overflow-x-auto">
                     <Table>
                         <TableHeader>
                             <TableRow>

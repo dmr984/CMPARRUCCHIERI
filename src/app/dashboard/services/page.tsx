@@ -102,11 +102,11 @@ export default function ServicesPage() {
         </Button>
       </PageHeader>
       <Card>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-1/3">Servizio</TableHead>
+                <TableHead className="w-2/5">Servizio</TableHead>
                 <TableHead>Durata</TableHead>
                 <TableHead>Prezzo</TableHead>
                 <TableHead className="text-right">Azioni</TableHead>
@@ -117,7 +117,7 @@ export default function ServicesPage() {
                 <TableRow key={service.id}>
                   <TableCell>
                     <div className="font-medium">{service.name}</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground hidden sm:block">
                       {service.description}
                     </div>
                   </TableCell>

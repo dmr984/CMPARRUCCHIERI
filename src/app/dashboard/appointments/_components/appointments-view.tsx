@@ -66,40 +66,42 @@ export function AppointmentsView({
   };
 
   return (
-    <div className="grid gap-8 md:grid-cols-3">
-      <Card className="md:col-span-1">
-        <CardContent className="p-1">
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={setDate}
-            className="w-full"
-            locale={it}
-            classNames={{
-                day_cell: 'h-12 w-16 text-center text-sm p-0 relative',
-                day: 'h-12 w-16 p-0 font-normal',
-            }}
-            components={{
-                DayContent: ({ date }) => {
-                    const dailyAppointments = appointments.filter((app) => isSameDay(app.dateTime, date));
-                    return (
-                        <>
-                            <p>{date.getDate()}</p>
-                            {dailyAppointments.length > 0 && (
-                                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
-                                    {dailyAppointments.slice(0, 3).map((_, index) => (
-                                        <div key={index} className="h-1 w-1 rounded-full bg-primary" />
-                                    ))}
-                                </div>
-                            )}
-                        </>
-                    )
-                }
-            }}
-          />
-        </CardContent>
-      </Card>
-      <Card className="md:col-span-2">
+    <div className="grid gap-8 lg:grid-cols-3">
+      <div className="lg:col-span-1">
+        <Card>
+          <CardContent className="p-1 flex justify-center">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              className="w-full"
+              locale={it}
+              classNames={{
+                  day_cell: 'text-center text-sm p-0 relative',
+                  day: 'h-12 w-16 p-0 font-normal',
+              }}
+              components={{
+                  DayContent: ({ date }) => {
+                      const dailyAppointments = appointments.filter((app) => isSameDay(app.dateTime, date));
+                      return (
+                          <>
+                              <p>{date.getDate()}</p>
+                              {dailyAppointments.length > 0 && (
+                                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+                                      {dailyAppointments.slice(0, 3).map((_, index) => (
+                                          <div key={index} className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                      ))}
+                                  </div>
+                              )}
+                          </>
+                      )
+                  }
+              }}
+            />
+          </CardContent>
+        </Card>
+      </div>
+      <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>
             Appuntamenti per {date ? format(date, 'd MMMM yyyy', { locale: it }) : '...'}
@@ -108,13 +110,13 @@ export function AppointmentsView({
             {selectedDayAppointments.length} appuntamento(i) programmati per questo giorno.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Cliente</TableHead>
-                <TableHead>Servizio</TableHead>
-                <TableHead>Stilista</TableHead>
+                <TableHead className="hidden sm:table-cell">Servizio</TableHead>
+                <TableHead className="hidden md:table-cell">Stilista</TableHead>
                 <TableHead>Ora</TableHead>
                 <TableHead>Stato</TableHead>
                 <TableHead className="text-right">Azioni</TableHead>
@@ -134,7 +136,7 @@ export function AppointmentsView({
                       <TableRow key={app.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-9 w-9">
+                            <Avatar className="h-9 w-9 hidden sm:flex">
                               <AvatarImage
                                 src={customer?.avatarUrl}
                                 alt={customer?.name}
@@ -146,7 +148,7 @@ export function AppointmentsView({
                             <span className="font-medium">{customer?.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           <div className="flex flex-col gap-1">
                             {appointmentServices.map(service => (
                               <Badge key={service.id} variant="secondary" className="whitespace-nowrap">
@@ -155,7 +157,7 @@ export function AppointmentsView({
                             ))}
                           </div>
                         </TableCell>
-                        <TableCell>{stylist?.name}</TableCell>
+                        <TableCell className="hidden md:table-cell">{stylist?.name}</TableCell>
                         <TableCell>{format(app.dateTime, 'HH:mm')}</TableCell>
                         <TableCell>
                           <Badge
