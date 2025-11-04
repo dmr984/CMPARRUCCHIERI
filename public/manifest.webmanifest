@@ -1,7 +1,7 @@
 {
   "name": "Carmelinda",
   "short_name": "Carmelinda",
-  "description": "Gestisci il tuo salone con facilità.",
+  "description": "Carmelinda - Manager del Salone",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
