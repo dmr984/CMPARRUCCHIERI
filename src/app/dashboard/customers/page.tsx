@@ -36,6 +36,12 @@ export default function CustomersPage() {
   const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
   const [importedContact, setImportedContact] = useState<ImportedContact | null>(null);
   const { toast } = useToast();
+  const [isInIframe, setIsInIframe] = useState(true);
+
+  useEffect(() => {
+    // This effect runs only on the client
+    setIsInIframe(window.self !== window.top);
+  }, []);
 
   const fetchData = useCallback(async () => {
     if (!isConfigured || !db) return;
@@ -68,6 +74,15 @@ export default function CustomersPage() {
   };
   
   const handleImportContact = async () => {
+    if (isInIframe) {
+        toast({
+            title: "Funzione non disponibile in anteprima",
+            description: "L'importazione dei contatti è disponibile solo nell'applicazione distribuita, non nell'ambiente di sviluppo.",
+            variant: "destructive",
+        });
+        return;
+    }
+
     if (!('contacts' in navigator && 'select' in (navigator as any).contacts)) {
         toast({
             title: "Funzione non supportata",
