@@ -94,7 +94,8 @@ export function AppointmentForm({
     },
   });
   
-  const [openCombobox, setOpenCombobox] = useState(false);
+  const [openCustomerCombobox, setOpenCustomerCombobox] = useState(false);
+  const [openServicesCombobox, setOpenServicesCombobox] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -164,22 +165,59 @@ export function AppointmentForm({
                     control={form.control}
                     name="customerId"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="flex flex-col">
                         <FormLabel>Cliente</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Seleziona un cliente" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {customers.map((c) => (
-                              <SelectItem key={c.id} value={c.id}>
-                                {c.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                         <Popover open={openCustomerCombobox} onOpenChange={setOpenCustomerCombobox}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "w-full justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value
+                                  ? customers.find(
+                                      (customer) => customer.id === field.value
+                                    )?.name
+                                  : "Seleziona un cliente"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                            <Command>
+                              <CommandInput placeholder="Cerca cliente..." />
+                              <CommandList>
+                                <CommandEmpty>Nessun cliente trovato.</CommandEmpty>
+                                <CommandGroup>
+                                  {customers.map((customer) => (
+                                    <CommandItem
+                                      value={customer.name}
+                                      key={customer.id}
+                                      onSelect={() => {
+                                        form.setValue("customerId", customer.id)
+                                        setOpenCustomerCombobox(false)
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          customer.id === field.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      {customer.name}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -190,7 +228,7 @@ export function AppointmentForm({
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
                         <FormLabel>Servizi</FormLabel>
-                        <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
+                        <Popover open={openServicesCombobox} onOpenChange={setOpenServicesCombobox}>
                           <PopoverTrigger asChild>
                             <FormControl>
                               <Button
@@ -231,7 +269,7 @@ export function AppointmentForm({
                                           ? currentServiceIds.filter((id) => id !== service.id)
                                           : [...currentServiceIds, service.id];
                                         field.onChange(newServiceIds);
-                                        setOpenCombobox(true); // Keep the popover open
+                                        setOpenServicesCombobox(true); // Keep the popover open
                                       }}
                                     >
                                       <Check
@@ -396,3 +434,5 @@ export function AppointmentForm({
     </Dialog>
   );
 }
+
+    
