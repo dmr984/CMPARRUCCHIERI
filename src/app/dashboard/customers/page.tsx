@@ -28,10 +28,12 @@ import type { Customer } from '@/lib/types';
 import { CustomerForm, type ImportedContact } from './_components/customer-form';
 import { useToast } from '@/hooks/use-toast';
 import { useFirebase } from '@/firebase/provider';
+import { Input } from '@/components/ui/input';
 
 export default function CustomersPage() {
   const { db, isConfigured } = useFirebase();
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
   const [importedContact, setImportedContact] = useState<ImportedContact | null>(null);
@@ -157,8 +159,12 @@ export default function CustomersPage() {
     setImportedContact(null);
   };
 
+  const filteredCustomers = customers.filter(customer =>
+    customer.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div>
+    <div className="space-y-4">
       <PageHeader
         title="Clienti"
         description="Visualizza e gestisci la tua lista clienti."
@@ -174,6 +180,16 @@ export default function CustomersPage() {
             </Button>
         </div>
       </PageHeader>
+      
+      <div className="mb-4">
+        <Input
+          placeholder="Cerca cliente..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
+
       <Card>
         <CardContent className="overflow-x-auto">
           <Table>
@@ -186,7 +202,7 @@ export default function CustomersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {customers.map((customer) => (
+              {filteredCustomers.map((customer) => (
                 <TableRow key={customer.id}>
                   <TableCell>
                     <div className="flex items-center gap-4">
