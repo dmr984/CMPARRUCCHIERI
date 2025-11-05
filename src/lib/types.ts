@@ -62,6 +62,6 @@ export type SalonProfile = {
 // Type for contact imported from device
 export type ImportedContact = {
     name: string;
-    email: string;
+    email?: string;
     phone: string;
 }

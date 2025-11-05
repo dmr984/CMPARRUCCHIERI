@@ -65,6 +65,7 @@ export const saveCustomer = (db: Firestore, customer: Omit<Customer, 'id' | 'las
     const { id, ...data } = customer;
     const newCustomer = {
         ...data,
+        email: data.email || '',
         lastVisit: Timestamp.now(),
         avatarUrl: `https://picsum.photos/seed/${Math.random()}/100/100`,
     };

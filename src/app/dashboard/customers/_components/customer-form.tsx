@@ -36,7 +36,7 @@ const formSchema = z.object({
 
 export type ImportedContact = {
   name: string;
-  email: string;
+  email?: string;
   phone: string;
 }
 
@@ -81,7 +81,7 @@ export function CustomerForm({
       } else if (importedContact) {
          form.reset({
           name: importedContact.name,
-          email: importedContact.email,
+          email: importedContact.email || '',
           phone: importedContact.phone,
           preferences: '',
         });
@@ -142,7 +142,7 @@ export function CustomerForm({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Email (opzionale)</FormLabel>
                   <FormControl>
                     <Input type="email" placeholder="Es: mario.rossi@example.com" {...field} />
                   </FormControl>

@@ -93,17 +93,27 @@ export default function CustomersPage() {
     }
 
     try {
-        const contacts = await (navigator as any).contacts.select(['name', 'email', 'tel'], { multiple: false });
-        if (contacts.length > 0) {
-            const contact = contacts[0];
-            const imported: ImportedContact = {
-                name: contact.name?.[0] || '',
-                email: contact.email?.[0] || '',
-                phone: contact.tel?.[0] || '',
-            };
-            setImportedContact(imported);
-            setEditingCustomer(undefined);
-            setIsFormOpen(true);
+        const contacts = await (navigator as any).contacts.select(['name', 'email', 'tel'], { multiple: true });
+        if (contacts.length > 0 && db) {
+            let importedCount = 0;
+            for (const contact of contacts) {
+                if (contact.name?.[0] && contact.tel?.[0]) {
+                    const newCustomer = {
+                        name: contact.name[0],
+                        email: contact.email?.[0] || '',
+                        phone: contact.tel[0],
+                    };
+                    await saveCustomer(db, newCustomer);
+                    importedCount++;
+                }
+            }
+            if (importedCount > 0) {
+                toast({
+                    title: "Importazione completata",
+                    description: `${importedCount} clienti sono stati importati con successo.`,
+                });
+                setTimeout(() => fetchData(), 1000);
+            }
         }
     } catch (ex) {
         console.error("Errore durante l'importazione del contatto:", ex);
