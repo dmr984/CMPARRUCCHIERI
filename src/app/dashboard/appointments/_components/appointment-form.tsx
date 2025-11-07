@@ -414,13 +414,13 @@ export function AppointmentForm({
                 <div>
                 {appointment && (
                     <Button type="button" variant="destructive" onClick={handleDelete}>
-                        Elimina
+                        Annulla Appuntamento
                     </Button>
                 )}
                 </div>
                 <div className="flex gap-2">
                 <Button type="button" variant="outline" onClick={onClose}>
-                    Annulla
+                    Chiudi
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -434,5 +434,3 @@ export function AppointmentForm({
     </Dialog>
   );
 }
-
-    

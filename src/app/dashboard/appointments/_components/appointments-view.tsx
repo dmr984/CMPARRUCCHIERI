@@ -27,12 +27,13 @@ import {
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MoreVertical } from 'lucide-react';
+import { MoreVertical, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -43,6 +44,7 @@ interface AppointmentsViewProps {
   staff: Staff[];
   onEditAppointment: (appointment: Appointment) => void;
   onDeleteAppointment: (appointmentId: string) => void;
+  onSendReminder: (appointment: Appointment) => void;
 }
 
 export function AppointmentsView({
@@ -52,6 +54,7 @@ export function AppointmentsView({
   staff,
   onEditAppointment,
   onDeleteAppointment,
+  onSendReminder,
 }: AppointmentsViewProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
 
@@ -132,6 +135,8 @@ export function AppointmentsView({
                     );
                     const appointmentServices = getServicesForAppointment(app.serviceIds);
                     const stylist = staff.find((st) => st.id === app.staffId);
+                    const isUpcoming = app.dateTime > new Date() && app.status === 'Programmato';
+
                     return (
                       <TableRow key={app.id}>
                         <TableCell>
@@ -183,9 +188,16 @@ export function AppointmentsView({
                               <DropdownMenuItem onClick={() => onEditAppointment(app)}>
                                 Modifica/Vedi Dettagli
                               </DropdownMenuItem>
+                              {isUpcoming && (
+                                <DropdownMenuItem onClick={() => onSendReminder(app)}>
+                                  <Bell className="mr-2 h-4 w-4"/>
+                                  Invia Promemoria
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
                               <DropdownMenuItem 
                                 onClick={() => onDeleteAppointment(app.id)}
-                                className="text-destructive">
+                                className="text-destructive focus:text-destructive focus:bg-destructive/10">
                                 Annulla
                               </DropdownMenuItem>
                             </DropdownMenuContent>

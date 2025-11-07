@@ -5,12 +5,15 @@ import { PageHeader } from '@/components/page-header';
 import { getAppointments, getCustomers, getServices, getStaff, saveAppointment, deleteAppointment } from '@/lib/data';
 import { AppointmentsView } from './_components/appointments-view';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Edit } from 'lucide-react';
+import { PlusCircle, Edit, Send } from 'lucide-react';
 import type { Appointment, Customer, Service, Staff } from '@/lib/types';
 import { AppointmentForm } from './_components/appointment-form';
 import { useToast } from '@/hooks/use-toast';
 import { useFirebase } from '@/firebase/provider';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { personalizedWhatsappReminder } from '@/ai/flows/personalized-whatsapp-reminders';
+import { format } from 'date-fns';
+import { it } from 'date-fns/locale';
 
 export default function AppointmentsPage() {
   const { db, isConfigured } = useFirebase();
@@ -72,6 +75,40 @@ export default function AppointmentsPage() {
     setEditingAppointment(appointment);
     setIsFormOpen(true);
   }
+  
+  const handleSendReminder = async (appointment: Appointment) => {
+    const customer = customers.find(c => c.id === appointment.customerId);
+    const appointmentServices = appointment.serviceIds.map(id => services.find(s => s.id === id)).filter(Boolean) as Service[];
+    
+    if (!customer || appointmentServices.length === 0) {
+        toast({ title: 'Dati mancanti', description: 'Impossibile inviare il promemoria.', variant: 'destructive'});
+        return;
+    }
+
+    toast({ title: 'Generazione promemoria in corso...'});
+
+    try {
+        const serviceDetails = appointmentServices.map(s => s.name).join(', ');
+        const result = await personalizedWhatsappReminder({
+            customerName: customer.name,
+            appointmentDateTime: format(appointment.dateTime, 'PPP p', { locale: it }),
+            serviceDetails: serviceDetails,
+            salonName: 'CMparrucchieri',
+            customerPreferences: customer.preferences,
+            phoneNumber: customer.phone,
+        });
+
+        const whatsappUrl = `https://wa.me/${customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(result.message)}`;
+        window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+        
+        toast({ title: 'Messaggio pronto!', description: 'Il promemoria è stato generato e aperto in WhatsApp.'});
+
+    } catch (error) {
+        console.error('Errore durante la generazione del promemoria:', error);
+        toast({ title: 'Errore', description: 'Non è stato possibile generare il promemoria.', variant: 'destructive'});
+    }
+  };
+
 
   const handleFormSave = (appointmentData: Omit<Appointment, 'id' | 'dateTime'> & { id?: string, dateTime: Date }) => {
     if (!db) return;
@@ -96,14 +133,16 @@ export default function AppointmentsPage() {
     if (!db) return;
     deleteAppointment(db, appointmentId);
     toast({
-        title: "Appuntamento Eliminato",
-        description: "L'appuntamento è stato eliminato.",
+        title: "Appuntamento Annullato",
+        description: "L'appuntamento è stato contrassegnato come annullato.",
         variant: "destructive"
     });
     // Optimistic update or refetch
-    setTimeout(() => fetchData(), 1000);
-    setIsFormOpen(false);
-    setEditingAppointment(undefined);
+    setTimeout(() => {
+        fetchData();
+        setIsFormOpen(false);
+        setEditingAppointment(undefined);
+    }, 1000);
   }
 
   return (
@@ -145,6 +184,7 @@ export default function AppointmentsPage() {
         staff={staff}
         onEditAppointment={handleEditAppointment}
         onDeleteAppointment={handleDeleteAppointment}
+        onSendReminder={handleSendReminder}
       />
        {isFormOpen && (
         <AppointmentForm

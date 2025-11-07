@@ -1,4 +1,4 @@
-import { Timestamp, collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { Timestamp, collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, writeBatch, updateDoc } from 'firebase/firestore';
 import type { Firestore } from 'firebase/firestore';
 import type { Customer, Staff, Service, Appointment, Product, SalonProfile } from './types';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -177,7 +177,9 @@ export const saveAppointment = (db: Firestore, appointment: Omit<Appointment, 'i
 
 export const deleteAppointment = (db: Firestore, appointmentId: string): void => {
     const docRef = doc(db, 'appointments', appointmentId);
-    deleteDoc(docRef).catch((error) => handleFirestoreError(error, docRef.path, 'delete'));
+    // Instead of deleting, we update the status to "Annullato"
+    const dataToUpdate = { status: 'Annullato' };
+    updateDoc(docRef, dataToUpdate).catch((error) => handleFirestoreError(error, docRef.path, 'update', dataToUpdate));
 }
 
 
