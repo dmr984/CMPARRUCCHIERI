@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MoreVertical, Bell, BellOff } from 'lucide-react';
+import { MoreVertical, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -36,6 +36,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 interface AppointmentsViewProps {
   appointments: Appointment[];
@@ -151,8 +152,13 @@ export function AppointmentsView({
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex items-center gap-2">
+                               {isUpcoming && (
+                                <span className={cn(
+                                    "h-2.5 w-2.5 rounded-full",
+                                    app.reminderSent ? "bg-red-500" : "bg-green-500"
+                                )} />
+                               )}
                               <span className="font-medium">{customer?.name}</span>
-                              {app.reminderSent && <BellOff className="h-3 w-3 text-muted-foreground" />}
                             </div>
                           </div>
                         </TableCell>
@@ -192,8 +198,10 @@ export function AppointmentsView({
                                 Modifica/Vedi Dettagli
                               </DropdownMenuItem>
                               {isUpcoming && (
-                                <DropdownMenuItem onClick={() => onSendReminder(app)} disabled={app.reminderSent}>
-                                  {app.reminderSent ? <BellOff className="mr-2 h-4 w-4"/> : <Bell className="mr-2 h-4 w-4"/>}
+                                <DropdownMenuItem onClick={() => onSendReminder(app)} disabled={app.reminderSent} className={cn(
+                                    app.reminderSent ? 'text-red-600 focus:text-red-600' : 'text-green-600 focus:text-green-600'
+                                )}>
+                                  <Bell className="mr-2 h-4 w-4"/>
                                   {app.reminderSent ? 'Promemoria Inviato' : 'Invia Promemoria'}
                                 </DropdownMenuItem>
                               )}
