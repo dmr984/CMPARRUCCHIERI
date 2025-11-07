@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { PageHeader } from '@/components/page-header';
-import { getAppointments, getCustomers, getServices, getStaff, saveAppointment, deleteAppointment } from '@/lib/data';
+import { getAppointments, getCustomers, getServices, getStaff, saveAppointment, deleteAppointment, markReminderAsSent } from '@/lib/data';
 import { AppointmentsView } from './_components/appointments-view';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Send } from 'lucide-react';
@@ -79,7 +79,7 @@ export default function AppointmentsPage() {
   const handleSendReminder = async (appointment: Appointment) => {
     const customer = customers.find(c => c.id === appointment.customerId);
     
-    if (!customer) {
+    if (!customer || !db) {
         toast({ title: 'Dati mancanti', description: 'Impossibile inviare il promemoria.', variant: 'destructive'});
         return;
     }
@@ -98,7 +98,12 @@ export default function AppointmentsPage() {
         const whatsappUrl = `https://wa.me/${customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(result.message)}`;
         window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
         
+        markReminderAsSent(db, appointment.id);
+
         toast({ title: 'Messaggio pronto!', description: 'Il promemoria è stato generato e aperto in WhatsApp.'});
+        
+        // Refetch data to show reminder sent status
+        setTimeout(() => fetchData(), 1000);
 
     } catch (error) {
         console.error('Errore durante la generazione del promemoria:', error);

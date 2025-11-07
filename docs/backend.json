@@ -46,7 +46,8 @@
         "serviceIds": { "type": "array", "items": { "type": "string" } },
         "dateTime": { "type": "string", "format": "date-time" },
         "status": { "type": "string", "enum": ["Programmato", "Completato", "Annullato"] },
-        "notes": { "type": "string" }
+        "notes": { "type": "string" },
+        "reminderSent": { "type": "boolean", "description": "Whether a reminder has been sent for this appointment." }
       },
       "required": ["customerId", "staffId", "serviceIds", "dateTime", "status"]
     },

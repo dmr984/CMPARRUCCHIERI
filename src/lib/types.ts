@@ -36,6 +36,7 @@ export type Appointment = {
   dateTime: Date;
   status: AppointmentStatus;
   notes?: string;
+  reminderSent?: boolean;
 };
 
 export type FirebaseAppointment = Omit<Appointment, 'dateTime'> & {

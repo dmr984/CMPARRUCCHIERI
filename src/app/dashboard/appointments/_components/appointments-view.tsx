@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MoreVertical, Bell } from 'lucide-react';
+import { MoreVertical, Bell, BellOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -150,7 +150,10 @@ export function AppointmentsView({
                                 {customer?.name.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="font-medium">{customer?.name}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{customer?.name}</span>
+                              {app.reminderSent && <BellOff className="h-3 w-3 text-muted-foreground" />}
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
@@ -189,9 +192,9 @@ export function AppointmentsView({
                                 Modifica/Vedi Dettagli
                               </DropdownMenuItem>
                               {isUpcoming && (
-                                <DropdownMenuItem onClick={() => onSendReminder(app)}>
-                                  <Bell className="mr-2 h-4 w-4"/>
-                                  Invia Promemoria
+                                <DropdownMenuItem onClick={() => onSendReminder(app)} disabled={app.reminderSent}>
+                                  {app.reminderSent ? <BellOff className="mr-2 h-4 w-4"/> : <Bell className="mr-2 h-4 w-4"/>}
+                                  {app.reminderSent ? 'Promemoria Inviato' : 'Invia Promemoria'}
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuSeparator />

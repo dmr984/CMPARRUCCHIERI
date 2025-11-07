@@ -182,6 +182,12 @@ export const deleteAppointment = (db: Firestore, appointmentId: string): void =>
     updateDoc(docRef, dataToUpdate).catch((error) => handleFirestoreError(error, docRef.path, 'update', dataToUpdate));
 }
 
+export const markReminderAsSent = (db: Firestore, appointmentId: string): void => {
+    const docRef = doc(db, 'appointments', appointmentId);
+    const dataToUpdate = { reminderSent: true };
+    updateDoc(docRef, dataToUpdate).catch((error) => handleFirestoreError(error, docRef.path, 'update', dataToUpdate));
+}
+
 
 // PRODUCTS
 export const getProducts = async (db: Firestore): Promise<Product[]> => {
