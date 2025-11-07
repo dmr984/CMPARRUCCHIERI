@@ -40,8 +40,14 @@ interface ReminderFormProps {
 
 export function ReminderForm({ customers, appointments, services }: ReminderFormProps) {
   const [generatedMessage, setGeneratedMessage] = useState('');
-  const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+  const [selectedAppointmentDetails, setSelectedAppointmentDetails] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [availableAppointments, setAvailableAppointments] = useState<Appointment[]>([]);
+
+  useEffect(() => {
+    const upcoming = appointments.filter(a => new Date(a.dateTime) > new Date() && a.status === 'Programmato');
+    setAvailableAppointments(upcoming);
+  }, [appointments]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -84,7 +90,8 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
   };
 
   const handleAppointmentChange = (appointmentId: string) => {
-    const appointment = appointments.find((a) => a.id === appointmentId);
+    form.setValue('appointmentId', appointmentId);
+    const appointment = availableAppointments.find((a) => a.id === appointmentId);
     if (appointment) {
       const customer = customers.find((c) => c.id === appointment.customerId);
       const appointmentServices = getServicesForAppointment(appointment.serviceIds);
@@ -93,15 +100,28 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
         customer,
         services: appointmentServices,
       };
-      setSelectedAppointment(fullAppointmentDetails);
+      setSelectedAppointmentDetails(fullAppointmentDetails);
       generateMessage(fullAppointmentDetails);
     } else {
-        setSelectedAppointment(null);
+        setSelectedAppointmentDetails(null);
         setGeneratedMessage('');
     }
   };
 
-  const upcomingAppointments = appointments.filter(a => new Date(a.dateTime) > new Date() && a.status === 'Programmato');
+  const handleSend = () => {
+    if (!selectedAppointmentDetails || !generatedMessage) return;
+
+    const whatsappUrl = `https://wa.me/${selectedAppointmentDetails.customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(generatedMessage)}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+
+    // Remove the sent appointment from the list
+    setAvailableAppointments(prev => prev.filter(app => app.id !== selectedAppointmentDetails.id));
+
+    // Reset the form and state
+    form.reset({ appointmentId: '' });
+    setSelectedAppointmentDetails(null);
+    setGeneratedMessage('');
+  }
 
   return (
     <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
@@ -119,24 +139,23 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Prossimo Appuntamento</FormLabel>
-                    <Select onValueChange={(value) => {
-                      field.onChange(value);
-                      handleAppointmentChange(value);
-                    }} defaultValue={field.value}>
+                    <Select onValueChange={handleAppointmentChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Seleziona un appuntamento" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {upcomingAppointments.map((app) => {
+                        {availableAppointments.length > 0 ? availableAppointments.map((app) => {
                             const customer = customers.find(c => c.id === app.customerId);
                             return (
                                 <SelectItem key={app.id} value={app.id}>
                                     {customer?.name} - {format(app.dateTime, 'd MMM, h:mm a', { locale: it })}
                                 </SelectItem>
                             )
-                        })}
+                        }) : (
+                            <SelectItem value="none" disabled>Nessun appuntamento imminente</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -170,12 +189,10 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
                 />
             )}
          
-          {generatedMessage && !isLoading && selectedAppointment && (
-            <Button asChild className="mt-4 w-full" disabled={!generatedMessage}>
-              <a href={`https://wa.me/${selectedAppointment.customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(generatedMessage)}`} target="_blank" rel="noopener noreferrer">
+          {generatedMessage && !isLoading && selectedAppointmentDetails && (
+            <Button onClick={handleSend} className="mt-4 w-full" disabled={!generatedMessage}>
                 <Send className="mr-2 h-4 w-4" />
                 Invia al Cliente tramite WhatsApp
-              </a>
             </Button>
           )}
         </CardContent>
