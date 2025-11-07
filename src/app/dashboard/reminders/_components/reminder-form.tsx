@@ -68,14 +68,10 @@ export function ReminderForm({ customers, appointments, services }: ReminderForm
     setIsLoading(true);
     setGeneratedMessage('');
     
-    const appointmentServices = getServicesForAppointment(appointment.serviceIds);
-    const serviceDetails = appointmentServices.map(s => s.name).join(', ');
-
     try {
       const result = await personalizedWhatsappReminder({
         customerName: appointment.customer.name,
         appointmentDateTime: format(appointment.dateTime, 'PPP p', { locale: it }),
-        serviceDetails: serviceDetails,
         salonName: 'CMparrucchieri',
         customerPreferences: appointment.customer.preferences,
         phoneNumber: appointment.customer.phone,

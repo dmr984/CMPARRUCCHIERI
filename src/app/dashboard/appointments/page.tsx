@@ -78,9 +78,8 @@ export default function AppointmentsPage() {
   
   const handleSendReminder = async (appointment: Appointment) => {
     const customer = customers.find(c => c.id === appointment.customerId);
-    const appointmentServices = appointment.serviceIds.map(id => services.find(s => s.id === id)).filter(Boolean) as Service[];
     
-    if (!customer || appointmentServices.length === 0) {
+    if (!customer) {
         toast({ title: 'Dati mancanti', description: 'Impossibile inviare il promemoria.', variant: 'destructive'});
         return;
     }
@@ -88,11 +87,9 @@ export default function AppointmentsPage() {
     toast({ title: 'Generazione promemoria in corso...'});
 
     try {
-        const serviceDetails = appointmentServices.map(s => s.name).join(', ');
         const result = await personalizedWhatsappReminder({
             customerName: customer.name,
             appointmentDateTime: format(appointment.dateTime, 'PPP p', { locale: it }),
-            serviceDetails: serviceDetails,
             salonName: 'CMparrucchieri',
             customerPreferences: customer.preferences,
             phoneNumber: customer.phone,

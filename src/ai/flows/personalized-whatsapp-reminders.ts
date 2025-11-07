@@ -15,7 +15,6 @@ import {z} from 'genkit';
 const PersonalizedWhatsappReminderInputSchema = z.object({
   customerName: z.string().describe("Nome del cliente"),
   appointmentDateTime: z.string().describe("Data e ora dell'appuntamento"),
-  serviceDetails: z.string().describe("Dettagli del servizio prenotato"),
   salonName: z.string().describe("Nome del salone"),
   customerPreferences: z
     .string()
@@ -56,7 +55,6 @@ const personalizedWhatsappReminderPrompt = ai.definePrompt({
 
   Nome Cliente: {{{customerName}}}
   Data/Ora Appuntamento: {{{appointmentDateTime}}}
-  Dettagli Servizio: {{{serviceDetails}}}
   Nome Salone: {{{salonName}}}
   @optional Preferenze Cliente: {{{customerPreferences}}}
 
@@ -65,7 +63,6 @@ const personalizedWhatsappReminderPrompt = ai.definePrompt({
   Assicurati di iniziare il messaggio con il nome del cliente.
   Includi il nome del salone nel messaggio.
   Includi la data e l'ora dell'appuntamento.
-  Includi il servizio che verrà fornito.
   Rispondi in italiano.
 `,
 });
