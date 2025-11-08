@@ -138,12 +138,6 @@ export function AppointmentForm({
     });
   };
 
-  const handleDelete = () => {
-    if (appointment) {
-        onDelete(appointment.id);
-    }
-  };
-
   const { isSubmitting } = form.formState;
   const title = appointment ? 'Modifica Appuntamento' : 'Nuovo Appuntamento';
   const description = appointment
@@ -413,7 +407,7 @@ export function AppointmentForm({
             <DialogFooter className="justify-between pt-4">
                 <div>
                 {appointment && (
-                    <Button type="button" variant="destructive" onClick={handleDelete}>
+                    <Button type="button" variant="destructive" onClick={() => onDelete(appointment.id)}>
                         Elimina Appuntamento
                     </Button>
                 )}

@@ -10,7 +10,19 @@ import type { Appointment, Customer, Service, Staff } from '@/lib/types';
 import { AppointmentForm } from './_components/appointment-form';
 import { useToast } from '@/hooks/use-toast';
 import { useFirebase } from '@/firebase/provider';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { 
+  Alert, 
+  AlertDescription, 
+  AlertTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { personalizedWhatsappReminder } from '@/ai/flows/personalized-whatsapp-reminders';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -26,6 +38,9 @@ export default function AppointmentsPage() {
   const [editingAppointment, setEditingAppointment] = useState<Appointment | undefined>(undefined);
   const [pendingReview, setPendingReview] = useState<Appointment[]>([]);
   const { toast } = useToast();
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [appointmentToDelete, setAppointmentToDelete] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!isConfigured || !db) return;
@@ -131,19 +146,26 @@ export default function AppointmentsPage() {
     setEditingAppointment(undefined);
   }
 
-  const handleDeleteAppointment = (appointmentId: string) => {
-    if (!db) return;
-    deleteAppointment(db, appointmentId);
+  const triggerDeleteDialog = (appointmentId: string) => {
+    setAppointmentToDelete(appointmentId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteAppointment = () => {
+    if (!db || !appointmentToDelete) return;
+    deleteAppointment(db, appointmentToDelete);
     toast({
-        title: "Appuntamento Annullato",
-        description: "L'appuntamento è stato contrassegnato come annullato.",
+        title: "Appuntamento Eliminato",
+        description: "L'appuntamento è stato rimosso con successo.",
         variant: "destructive"
     });
-    // Optimistic update or refetch
+    
     setTimeout(() => {
         fetchData();
         setIsFormOpen(false);
         setEditingAppointment(undefined);
+        setIsDeleteDialogOpen(false);
+        setAppointmentToDelete(null);
     }, 1000);
   }
 
@@ -185,7 +207,7 @@ export default function AppointmentsPage() {
         services={services}
         staff={staff}
         onEditAppointment={handleEditAppointment}
-        onDeleteAppointment={handleDeleteAppointment}
+        onDeleteAppointment={triggerDeleteDialog}
         onSendReminder={handleSendReminder}
       />
        {isFormOpen && (
@@ -193,13 +215,28 @@ export default function AppointmentsPage() {
             isOpen={isFormOpen}
             onClose={handleFormCancel}
             onSave={handleFormSave}
-            onDelete={handleDeleteAppointment}
+            onDelete={triggerDeleteDialog}
             appointment={editingAppointment}
             customers={customers}
             services={services}
             staff={staff}
         />
        )}
+       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>Sei assolutamente sicuro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Questa azione non può essere annullata. Questo eliminerà definitivamente
+                    l'appuntamento dai nostri server.
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setAppointmentToDelete(null)}>Annulla</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteAppointment}>Conferma</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+       </AlertDialog>
     </div>
   );
 }

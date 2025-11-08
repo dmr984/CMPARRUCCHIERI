@@ -177,9 +177,7 @@ export const saveAppointment = (db: Firestore, appointment: Omit<Appointment, 'i
 
 export const deleteAppointment = (db: Firestore, appointmentId: string): void => {
     const docRef = doc(db, 'appointments', appointmentId);
-    // Instead of deleting, we update the status to "Annullato"
-    const dataToUpdate = { status: 'Annullato' };
-    updateDoc(docRef, dataToUpdate).catch((error) => handleFirestoreError(error, docRef.path, 'update', dataToUpdate));
+    deleteDoc(docRef).catch((error) => handleFirestoreError(error, docRef.path, 'delete'));
 }
 
 export const markReminderAsSent = (db: Firestore, appointmentId: string): void => {
