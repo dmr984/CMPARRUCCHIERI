@@ -414,7 +414,7 @@ export function AppointmentForm({
                 <div>
                 {appointment && (
                     <Button type="button" variant="destructive" onClick={handleDelete}>
-                        Annulla Appuntamento
+                        Elimina Appuntamento
                     </Button>
                 )}
                 </div>
