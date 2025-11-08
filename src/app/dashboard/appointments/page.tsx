@@ -5,15 +5,12 @@ import { PageHeader } from '@/components/page-header';
 import { getAppointments, getCustomers, getServices, getStaff, saveAppointment, deleteAppointment, markReminderAsSent } from '@/lib/data';
 import { AppointmentsView } from './_components/appointments-view';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Edit, Send } from 'lucide-react';
+import { PlusCircle, Edit, Send, Bell } from 'lucide-react';
 import type { Appointment, Customer, Service, Staff } from '@/lib/types';
 import { AppointmentForm } from './_components/appointment-form';
 import { useToast } from '@/hooks/use-toast';
 import { useFirebase } from '@/firebase/provider';
 import { 
-  Alert, 
-  AlertDescription, 
-  AlertTitle,
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -23,6 +20,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Alert, 
+  AlertDescription, 
+  AlertTitle,
+} from '@/components/ui/alert';
 import { personalizedWhatsappReminder } from '@/ai/flows/personalized-whatsapp-reminders';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -113,7 +115,7 @@ export default function AppointmentsPage() {
         const whatsappUrl = `https://wa.me/${customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(result.message)}`;
         window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
         
-        markReminderAsSent(db, appointment.id);
+        await markReminderAsSent(db, appointment.id);
 
         toast({ title: 'Messaggio pronto!', description: 'Il promemoria è stato generato e aperto in WhatsApp.'});
         
@@ -151,9 +153,9 @@ export default function AppointmentsPage() {
     setIsDeleteDialogOpen(true);
   };
 
-  const handleDeleteAppointment = () => {
+  const handleDeleteAppointment = async () => {
     if (!db || !appointmentToDelete) return;
-    deleteAppointment(db, appointmentToDelete);
+    await deleteAppointment(db, appointmentToDelete);
     toast({
         title: "Appuntamento Eliminato",
         description: "L'appuntamento è stato rimosso con successo.",
