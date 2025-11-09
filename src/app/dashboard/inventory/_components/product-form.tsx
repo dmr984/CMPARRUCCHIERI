@@ -199,7 +199,7 @@ export function ProductForm({
                 )}
                 />
             
-            <DialogFooter className="justify-between">
+            <DialogFooter className="justify-between pt-4">
                 <div>
                 {product && (
                     <Button type="button" variant="destructive" onClick={handleDelete}>
