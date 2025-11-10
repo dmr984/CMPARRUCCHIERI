@@ -52,11 +52,11 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
       <SidebarProvider>
-        <Sidebar>
+        <Sidebar collapsible="icon">
           <SidebarHeader>
             <div className="flex items-center gap-3">
               <Logo />
-              <div className="flex flex-col">
+              <div className="flex flex-col group-data-[collapsible=icon]:hidden">
                 <h2 className="text-lg font-semibold -mb-1">Carmelinda</h2>
                 <p className="text-xs text-muted-foreground">Manager del Salone</p>
               </div>
@@ -76,7 +76,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                       tooltip={item.label}
                     >
                       <item.icon />
-                      <span>{item.label}</span>
+                      <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                     </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>

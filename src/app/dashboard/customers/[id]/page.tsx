@@ -94,7 +94,7 @@ export default function CustomerDetailPage() {
   }
 
   return (
-    <div>
+    <div className="space-y-8">
       <PageHeader title="Dettagli Cliente">
         <div className="flex flex-col sm:flex-row gap-2">
             <Button variant="outline" asChild>
