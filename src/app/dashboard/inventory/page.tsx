@@ -33,6 +33,7 @@ type EditableProduct = Product & { editStock?: number };
 export default function InventoryPage() {
   const { db, isConfigured } = useFirebase();
   const [products, setProducts] = useState<EditableProduct[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
   const { toast } = useToast();
@@ -56,11 +57,6 @@ export default function InventoryPage() {
     fetchData();
   }, [fetchData]);
   
-  useEffect(() => {
-    setProducts(prevProducts => prevProducts.map(p => ({ ...p, editStock: p.stock })));
-  }, [products.length]);
-
-
   const handleNewProduct = () => {
     setEditingProduct(undefined);
     setIsFormOpen(true);
@@ -120,17 +116,32 @@ export default function InventoryPage() {
         description: `Lo stock di "${product.name}" è stato aggiornato a ${product.editStock}.`,
     });
   };
+  
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader title="Inventario" description="Traccia e gestisci lo stock dei prodotti.">
         <Button onClick={handleNewProduct} disabled={!isConfigured}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Aggiungi Prodotto
         </Button>
       </PageHeader>
+
+      <div className="mb-4">
+        <Input
+          placeholder="Cerca per nome o categoria..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
+
       <Card>
-        <CardContent className="overflow-x-auto">
+        <CardContent className="overflow-x-auto pt-6">
           <Table>
             <TableHeader>
               <TableRow>
@@ -142,7 +153,7 @@ export default function InventoryPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map((product) => {
+              {filteredProducts.length > 0 ? filteredProducts.map((product) => {
                 const stockPercentage = (product.stock / (product.reorderLevel * 2)) * 100;
                 const isLowStock = product.stock <= product.reorderLevel;
                 const isStockDirty = product.stock !== product.editStock;
@@ -164,7 +175,7 @@ export default function InventoryPage() {
                             type="number"
                             className="w-16 h-8 text-center"
                             value={product.editStock}
-                            onChange={(e) => handleStockValueChange(product.id, parseInt(e.target.value, 10))}
+                            onChange={(e) => handleStockValueChange(product.id, parseInt(e.target.value, 10) || 0)}
                         />
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleStockValueChange(product.id, (product.editStock || 0) + 1)}>
                             <Plus className="h-4 w-4" />
@@ -207,7 +218,13 @@ export default function InventoryPage() {
                     </TableCell>
                   </TableRow>
                 )
-              })}
+              }) : (
+                 <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                        Nessun prodotto trovato.
+                    </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
