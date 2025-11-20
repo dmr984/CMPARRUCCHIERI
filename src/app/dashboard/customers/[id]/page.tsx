@@ -160,7 +160,7 @@ export default function CustomerDetailPage() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Data</TableHead>
-                                <TableHead>Servizi</TableHead>
+                                <TableHead>Servizi e Note</TableHead>
                                 <TableHead>Stilista</TableHead>
                                 <TableHead>Prezzo</TableHead>
                                 <TableHead>Stato</TableHead>
@@ -175,6 +175,11 @@ export default function CustomerDetailPage() {
                                             {app.services.map(service => (
                                                 <Badge key={service.id} variant="secondary" className="whitespace-nowrap">{service.name}</Badge>
                                             ))}
+                                            {app.notes && (
+                                                <p className="text-xs text-muted-foreground mt-1 italic">
+                                                    "{app.notes}"
+                                                </p>
+                                            )}
                                         </div>
                                     </TableCell>
                                     <TableCell>{app.staff?.name}</TableCell>
