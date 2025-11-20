@@ -28,9 +28,6 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
-import { useFirebase } from '@/firebase/provider';
-import { getStaff } from '@/lib/data';
-import type { Staff } from '@/lib/types';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -45,22 +42,6 @@ const navItems = [
 export function DashboardHeader() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [staff, setStaff] = useState<Staff[]>([]);
-  const { db, isConfigured } = useFirebase();
-
-  useEffect(() => {
-    async function fetchStaff() {
-      if (isConfigured && db) {
-        const staffList = await getStaff(db);
-        setStaff(staffList);
-      }
-    }
-    fetchStaff();
-  }, [db, isConfigured]);
-
-  const stylistProfiles = staff.filter(
-    (member) => member.role !== 'Manager'
-  );
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
@@ -158,21 +139,6 @@ export function DashboardHeader() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem>Log out</DropdownMenuItem>
-            
-            {stylistProfiles.length > 0 && (
-              <DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel>Profili Stilisti</DropdownMenuLabel>
-                {stylistProfiles.map((stylist) => (
-                  <DropdownMenuItem key={stylist.id} asChild>
-                    <Link href={`/dashboard/staff/${stylist.id}`}>
-                      <User className="mr-2 h-4 w-4" />
-                      {stylist.name}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuGroup>
-            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
