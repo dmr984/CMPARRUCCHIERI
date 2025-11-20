@@ -11,6 +11,7 @@ import {
   Settings,
   LayoutDashboard,
   Menu,
+  User,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -22,14 +23,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useFirebase } from '@/firebase/provider';
+import { getStaff } from '@/lib/data';
+import type { Staff } from '@/lib/types';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -44,6 +45,22 @@ const navItems = [
 export function DashboardHeader() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [staff, setStaff] = useState<Staff[]>([]);
+  const { db, isConfigured } = useFirebase();
+
+  useEffect(() => {
+    async function fetchStaff() {
+      if (isConfigured && db) {
+        const staffList = await getStaff(db);
+        setStaff(staffList);
+      }
+    }
+    fetchStaff();
+  }, [db, isConfigured]);
+
+  const stylistProfiles = staff.filter(
+    (member) => member.role !== 'Manager'
+  );
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
@@ -62,7 +79,7 @@ export function DashboardHeader() {
             className={cn(
               'transition-colors hover:text-foreground',
               pathname.startsWith(item.href) &&
-              (item.href !== '/dashboard' || pathname === '/dashboard')
+                (item.href !== '/dashboard' || pathname === '/dashboard')
                 ? 'text-foreground'
                 : 'text-muted-foreground'
             )}
@@ -100,10 +117,10 @@ export function DashboardHeader() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={cn(
                   'flex items-center gap-4 transition-colors hover:text-foreground',
-                   pathname.startsWith(item.href) &&
-                   (item.href !== '/dashboard' || pathname === '/dashboard')
-                     ? 'text-foreground'
-                     : 'text-muted-foreground'
+                  pathname.startsWith(item.href) &&
+                    (item.href !== '/dashboard' || pathname === '/dashboard')
+                    ? 'text-foreground'
+                    : 'text-muted-foreground'
                 )}
               >
                 <item.icon className="h-5 w-5" />
@@ -116,7 +133,7 @@ export function DashboardHeader() {
 
       <div className="flex w-full items-center justify-end gap-4 md:ml-auto md:gap-2 lg:gap-4">
         <span className="font-semibold text-sm hidden md:block">
-            Carmelinda - Manager del Salone
+          Carmelinda - Manager del Salone
         </span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -135,10 +152,27 @@ export function DashboardHeader() {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Il Mio Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profilo</DropdownMenuItem>
-            <DropdownMenuItem>Impostazioni</DropdownMenuItem>
-            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/settings">
+                Impostazioni
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem>Log out</DropdownMenuItem>
+            
+            {stylistProfiles.length > 0 && (
+              <DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Profili Stilisti</DropdownMenuLabel>
+                {stylistProfiles.map((stylist) => (
+                  <DropdownMenuItem key={stylist.id} asChild>
+                    <Link href={`/dashboard/staff/${stylist.id}`}>
+                      <User className="mr-2 h-4 w-4" />
+                      {stylist.name}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuGroup>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
