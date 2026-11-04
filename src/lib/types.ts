@@ -60,6 +60,16 @@ export type SalonProfile = {
   email: string;
 };
 
+export type WhatsAppSettings = {
+  enabled: boolean;
+  template: string;
+  timingType: '1_hour' | '2_hours' | '3_hours' | 'custom_hours' | '1_day' | '2_days' | 'custom_days' | 'day_before' | 'hours_before';
+  sendTime?: string;
+  customHours?: number;
+  customDays?: number;
+  hoursBefore?: number;
+};
+
 // Type for contact imported from device
 export type ImportedContact = {
     name: string;

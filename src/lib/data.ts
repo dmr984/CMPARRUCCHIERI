@@ -1,6 +1,6 @@
 import { Timestamp, collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, writeBatch, updateDoc } from 'firebase/firestore';
 import type { Firestore } from 'firebase/firestore';
-import type { Customer, Staff, Service, Appointment, Product, SalonProfile } from './types';
+import type { Customer, Staff, Service, Appointment, Product, SalonProfile, WhatsAppSettings } from './types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
@@ -235,6 +235,53 @@ export const saveSalonProfile = (db: Firestore, profile: SalonProfile): void => 
     const docRef = doc(db, 'salon', 'profile');
     setDoc(docRef, profile, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', profile));
 }
+
+export const defaultWhatsAppSettings: WhatsAppSettings = {
+    enabled: true,
+    template: 'Ciao {nome}! Ti ricordiamo il tuo appuntamento da {salone} per {data} alle ore {ora} ({servizi}). Per disdette o modifiche avvisaci con anticipo. A presto!',
+    timingType: '1_day',
+    sendTime: '09:00',
+    customHours: 2,
+    customDays: 1,
+    hoursBefore: 24,
+};
+
+export const getWhatsAppSettings = async (db: Firestore): Promise<WhatsAppSettings> => {
+    const docRef = doc(db, 'salon', 'whatsapp_settings');
+    try {
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return { ...defaultWhatsAppSettings, ...docSnap.data() } as WhatsAppSettings;
+        }
+        return defaultWhatsAppSettings;
+    } catch (error: any) {
+        handleFirestoreError(error, docRef.path, 'get');
+        return defaultWhatsAppSettings;
+    }
+};
+
+export const saveWhatsAppSettings = (db: Firestore, settings: WhatsAppSettings): void => {
+    const docRef = doc(db, 'salon', 'whatsapp_settings');
+    setDoc(docRef, settings, { merge: true }).catch((error) => handleFirestoreError(error, docRef.path, 'update', settings));
+};
+
+export const markAppointmentReminderSent = async (db: Firestore, appointmentId: string): Promise<void> => {
+    const docRef = doc(db, 'appointments', appointmentId);
+    try {
+        await updateDoc(docRef, { reminderSent: true });
+    } catch (error: any) {
+        handleFirestoreError(error, docRef.path, 'update', { reminderSent: true });
+    }
+};
+
+export const setAppointmentReminderStatus = async (db: Firestore, appointmentId: string, reminderSent: boolean): Promise<void> => {
+    const docRef = doc(db, 'appointments', appointmentId);
+    try {
+        await updateDoc(docRef, { reminderSent });
+    } catch (error: any) {
+        handleFirestoreError(error, docRef.path, 'update', { reminderSent });
+    }
+};
 
 
 // Seed function if needed

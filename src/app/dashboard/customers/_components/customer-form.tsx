@@ -100,6 +100,7 @@ export function CustomerForm({
     onSave({
       id: customer?.id,
       ...data,
+      email: data.email ?? '',
     });
   };
 

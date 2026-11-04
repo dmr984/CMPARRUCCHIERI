@@ -1,9 +1,9 @@
 'use client';
-import { getCustomers, getAppointments, getServices } from '@/lib/data';
+import { getCustomers, getAppointments, getServices, getWhatsAppSettings, getSalonProfile, defaultWhatsAppSettings } from '@/lib/data';
 import { ReminderForm } from './_components/reminder-form';
 import { PageHeader } from '@/components/page-header';
 import { useState, useEffect, useCallback } from 'react';
-import type { Customer, Appointment, Service } from '@/lib/types';
+import type { Customer, Appointment, Service, WhatsAppSettings, SalonProfile } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useFirebase } from '@/firebase/provider';
 
@@ -12,19 +12,25 @@ export default function RemindersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [whatsappSettings, setWhatsappSettings] = useState<WhatsAppSettings>(defaultWhatsAppSettings);
+  const [salonProfile, setSalonProfile] = useState<SalonProfile | null>(null);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
     if (!isConfigured || !db) return;
     try {
-        const [customers, appointments, services] = await Promise.all([
+        const [customersData, appointmentsData, servicesData, waSettings, profile] = await Promise.all([
           getCustomers(db),
           getAppointments(db),
-          getServices(db)
+          getServices(db),
+          getWhatsAppSettings(db),
+          getSalonProfile(db)
         ]);
-        setCustomers(customers);
-        setAppointments(appointments);
-        setServices(services);
+        setCustomers(customersData);
+        setAppointments(appointmentsData);
+        setServices(servicesData);
+        if (waSettings) setWhatsappSettings(waSettings);
+        if (profile) setSalonProfile(profile);
     } catch(error) {
         console.error("Failed to fetch reminders data:", error);
         toast({
@@ -40,13 +46,20 @@ export default function RemindersPage() {
   }, [fetchData]);
   
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader 
-        title="Promemoria AI via WhatsApp" 
-        description="Genera e invia promemoria personalizzati per gli appuntamenti ai tuoi clienti." 
+        title="Promemoria WhatsApp" 
+        description="Gestisci e invia promemoria automatici e personalizzati per gli appuntamenti ai tuoi clienti." 
       />
-      <div className="mt-8">
-        <ReminderForm customers={customers} appointments={appointments} services={services} />
+      <div>
+        <ReminderForm 
+          customers={customers} 
+          appointments={appointments} 
+          services={services} 
+          whatsappSettings={whatsappSettings}
+          salonProfile={salonProfile}
+          onRefresh={fetchData}
+        />
       </div>
     </div>
   );

@@ -81,7 +81,8 @@ export function AppointmentsView({
               className="w-full"
               locale={it}
               classNames={{
-                  day_cell: 'text-center text-sm p-0 relative',
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  day_cell: 'text-center text-sm p-0 relative' as any,
                   day: 'h-12 w-16 p-0 font-normal',
               }}
               components={{
